@@ -1,0 +1,98 @@
+<form class="flexcol" autocomplete='off' onsubmit="event.preventDefault();">
+	<p>
+		{{localize 'RandomEncounter.intro'}}
+	</p>
+
+	{{#each encounters as |encounter idx|}}
+		<div class='flexrow encounter-entry' data-idx="{{idx}}">
+			<div class='flexcol'>
+				<div class='form-group'>
+					<label for="{{idx}}.name">
+						{{localize 'RandomEncounter.name.label'}}
+					</label>
+					<div class='form-fields'>
+						<input
+							type='text'
+							name="{{idx}}.name"
+							value="{{encounter.name}}"
+						/>
+					</div>
+				</div>
+				<div class='form-group'>
+					<label for="{{idx}}.scene">
+						{{localize 'RandomEncounter.scene.label'}}
+					</label>
+					<select name="{{idx}}.scene">
+						<option value=""></option>
+						{{#each encounter.scenes as | scene|}}
+							{{#if scene.selected}}
+								<option value="{{scene.name}}" selected>
+							{{else}}
+								<option value="{{scene.name}}">
+							{{/if}}
+								{{scene.name}}
+							</option>
+						{{/each}}
+					</select>
+				</div>
+				<div class='form-group'>
+					<label for="{{idx}}.time">
+						{{localize 'RandomEncounter.time.label'}}
+					</label>
+					<div class='form-fields'>
+						<input
+							type='text'
+							name="{{idx}}.time"
+							value="{{encounter.time}}"
+						/>
+					</div>
+				</div>
+				<div class='form-group'>
+					<label for="{{idx}}.chance">
+						{{localize 'RandomEncounter.chance.label'}}
+					</label>
+					<div class='form-fields'>
+						<input
+							type='text'
+							name="{{idx}}.chance"
+							value="{{encounter.chance}}"
+						/>
+					</div>
+				</div>
+				<div class='form-group'>
+					<label for="{{idx}}.rolltable">
+						{{localize 'RandomEncounter.rolltable.label'}}
+					</label>
+					<select name="{{idx}}.rolltable" data-dtype='String'>
+						<option value=""></option>
+						{{#each encounter.rolltables as | rolltable|}}
+							{{#if rolltable.selected}}
+								<option value="{{rolltable.name}}" selected>
+							{{else}}
+								<option value="{{rolltable.name}}">
+							{{/if}}
+								{{rolltable.name}}
+							</option>
+						{{/each}}
+					</select>
+				</div>
+				<button class='add-rolltable'>
+					<i class='fas fa-th-list'></i>{{localize 'RandomEncounter.NewRollTable'}}
+				</button>
+			</div>
+			<div class='flexcol remove-encounter-wrapper'>
+				<button class='remove-encounter' data-idx="{{idx}}">
+					<i class='far fa-trash-alt'></i>
+				</button>
+			</div>
+		</div>
+	{{/each}}
+	<footer class='sheet-footer flexrow add-encounter-wrapper'>
+		<button type='submit' name='submit' value='1'>
+			<i class='far fa-save'></i>{{localize 'RandomEncounter.save'}}
+		</button>
+		<button class='add-encounter'>
+			<i class='far fa-plus-square'></i>{{localize 'RandomEncounter.add'}}
+		</button>
+	</footer>
+</form>

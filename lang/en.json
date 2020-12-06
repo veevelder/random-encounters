@@ -1,0 +1,19 @@
+{
+	"RandomEncounter.Keybind" : "Trigger Random Encounter",
+	"RandomEncounter.KeybindHint" : "When set, will trigger the random encounters for the scene regardless of when time was set",
+	"RandomEncounter.button.name": "Configure Random Encounters",
+	"RandomEncounter.button.label": "Configure",
+	"RandomEncounter.button.hint": "Create/Update/Delete random encounters",
+	"RandomEncounter.save": "Save",
+	"RandomEncounter.intro": "To Create a new Random Encounter, click the Add Encounter button at the bottom, Give it a name, Select a scene, Set how often to roll the table (optional), Set Chance for rolling the table (optional), Create or Link to a RollTable",
+	"RandomEncounter.name.label": "Encounter Name",
+	"RandomEncounter.scene.label": "Scene",
+	"RandomEncounter.time.label": "Tigger Encounter Time in minutes (optional)",
+	"RandomEncounter.chance.label": "Dice Formula (optional)",
+	"RandomEncounter.rolltable.label": "RollTable",
+	"RandomEncounter.add": "Add Encounter",
+	"RandomEncounter.NewRollTable": "New RollTable",
+	"RandomEncounter.SaveNameError": "You must provide an Encounter Name",
+	"RandomEncounter.SaveSceneError": "You must provide a Scene",
+	"RandomEncounter.SaveRollTableError": "You must provide a RollTable"	
+}

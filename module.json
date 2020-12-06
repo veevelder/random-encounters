@@ -1,0 +1,26 @@
+{
+	"name": "random-encounters",
+	"title": "Random Encounters",
+	"description": "Create a random encounter for a scene and trigger them manually or time based",
+	"version": "0.1.0",
+	"author": "veevelder",
+	"minimumCoreVersion": "0.7.1",
+  	"compatibleCoreVersion": "0.7.8",
+	"esmodules": ["random-encounters.js"],
+	"languages": [
+		{
+			"lang": "en",
+			"name": "English",
+			"path": "lang/en.json"
+		}
+	],
+	"styles": [
+		"styles/random-encounter.css"
+	],
+	"system": "dnd5e",
+	"url" : "https://github.com/veevelder/combater",
+	"download" : "https://github.com/veevelder/combater/releases/download/0.1.0/combater.zip",
+	"manifest" : "https://raw.githubusercontent.com/veevelder/combater/main/module.json",
+	"license": "LICENSE",
+	"readme": "README.md"
+}

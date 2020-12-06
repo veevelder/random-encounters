@@ -72,7 +72,6 @@ export class RandomEncounterSettings extends FormApplication {
 				});
 			});
 		}
-		console.log(encounters)
 		return {encounters}
 	}
 
@@ -148,15 +147,15 @@ export class RandomEncounterSettings extends FormApplication {
 		$(event.target).closest("body").find("#tables button.create-entity").click()
 	}
 	
-	static do_render() {
-		console.log("rendering");
-		this.render();
-	}
+	//static do_render() {
+	// rerender the window if it was open and if a new roll table was created 
+	//	console.log("rendering");
+	//	this.render();
+	//}
 }
 
 
 let doEncounter = async (encounter) => {
-	console.log("doEncounter");
 	RandomEncounter.doRandomEncounter(encounter);
 }
 
@@ -211,10 +210,7 @@ class RandomEncounter {
 	}
 	
 	static doRandomEncounter(encounter) {
-		console.log("Running Random Encounter", encounter.name);
 		let active_scene = game.scenes.filter(a => a.active)[0].name;
-		console.log("active scene", active_scene, encounter.scene);
-		//let encounter = game.settings.get("random-encounter", "encounters").find(a => a.name == name);
 		if (encounter.scene == active_scene) {
 			//do roll check if one is set
 			let doRollTable = false;
@@ -226,10 +222,8 @@ class RandomEncounter {
 					doRollTable = true;
 				}
 			}
-			console.log("doing the roll table");
 			if(doRollTable) {
 				let tableResult = game.tables.entities.find(t => t.name == encounter.rolltable).roll().results[0]
-				console.log('result', tableResult);
 				RandomEncounter.printEncounter(encounter.name, tableResult.text);
 			}
 			else {
@@ -277,8 +271,8 @@ Hooks.once("init", function () {
 	RandomEncounterSettings.init();
 });
 
-Hooks.on("createRollTable", function() {
+//Hooks.on("createRollTable", function() {
 	//refresh settings window so it can get the new roll table name
-	RandomEncounterSettings.do_render();
-});
+//	RandomEncounterSettings.do_render();
+//});
 

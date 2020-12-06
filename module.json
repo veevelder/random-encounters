@@ -17,10 +17,16 @@
 	"styles": [
 		"styles/random-encounter.css"
 	],
+	"dependencies": [
+		{
+			"name": "about-time",
+			"manifest": "https://gitlab.com/tposney/about-time/raw/master/package/module.json,
+		}
+	]
 	"system": "dnd5e",
-	"url" : "https://github.com/veevelder/combater",
-	"download" : "https://github.com/veevelder/combater/releases/download/0.1.0/combater.zip",
-	"manifest" : "https://raw.githubusercontent.com/veevelder/combater/main/module.json",
+	"url" : "https://github.com/veevelder/random-encounters",
+	"download" : "",
+	"manifest" : "https://raw.githubusercontent.com/veevelder/random-encounters/main/module.json",
 	"license": "LICENSE",
 	"readme": "README.md"
 }

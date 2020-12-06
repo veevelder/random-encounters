@@ -25,7 +25,7 @@
 	]
 	"system": "dnd5e",
 	"url" : "https://github.com/veevelder/random-encounters",
-	"download" : "",
+	"download" : "https://github.com/veevelder/random-encounters/releases/download/0.1.0/random-encounters.zip",
 	"manifest" : "https://raw.githubusercontent.com/veevelder/random-encounters/main/module.json",
 	"license": "LICENSE",
 	"readme": "README.md"

@@ -22,7 +22,7 @@
 			"name": "about-time",
 			"manifest": "https://gitlab.com/tposney/about-time/raw/master/package/module.json,
 		}
-	]
+	],
 	"system": "dnd5e",
 	"url" : "https://github.com/veevelder/random-encounters",
 	"download" : "https://github.com/veevelder/random-encounters/releases/download/0.1.0/random-encounters.zip",

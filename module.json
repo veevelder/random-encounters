@@ -20,7 +20,7 @@
 	"dependencies": [
 		{
 			"name": "about-time",
-			"manifest": "https://gitlab.com/tposney/about-time/raw/master/package/module.json,
+			"manifest": "https://gitlab.com/tposney/about-time/raw/master/package/module.json
 		}
 	],
 	"system": "dnd5e",

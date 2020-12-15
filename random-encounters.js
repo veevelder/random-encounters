@@ -1,3 +1,8 @@
+import settingsExtender from './settings-extender.js';
+settingsExtender();
+
+//CONFIG["random-encounter-hotkey"] = ""
+
 export class RandomEncounterSettings extends FormApplication {
 	static init() {
 		game.settings.registerMenu("random-encounter", "template", {
@@ -23,7 +28,10 @@ export class RandomEncounterSettings extends FormApplication {
 			scope: "world",
 			config: true,
 			default: "",
-			type: String
+			type: window.Azzu.SettingsTypes.KeyBinding,
+			//onChange: (key) => {
+			//	CONFIG["random-encounter-hotkey"] = key;
+			//}
 		});
 	};
 	
@@ -254,20 +262,23 @@ class RandomEncounter {
 	}
 }
 
-Hooks.once("ready", function() {
+Hooks.once("init", function () {
 	window.addEventListener("keydown", ev => {
-		if (ev.repeat || ev.target.type == "textarea" || ev.target.type == "select" || ev.target.type == "select")
+		if (ev.repeat || document.activeElement.tagName !== "BODY")
 			return true;
 
-		if (game.settings.get("random-encounter", "key") != null) {
-			if(game.settings.get("random-encounter", "key") == ev.key) {
-				RandomEncounter.doRandomEncounters()
+		let setting_key = game.settings.get("random-encounter", "key")
+		if (setting_key != null) {
+			const key = window.Azzu.SettingsTypes.KeyBinding.parse(setting_key)
+			if (window.Azzu.SettingsTypes.KeyBinding.eventIsForBinding(ev, key)) {
+				ev.preventDefault();
+				ev.stopPropagation();
+				RandomEncounter.doRandomEncounters();
 			}
 		}
 	});
-});
-
-Hooks.once("init", function () {
+	
+	
 	RandomEncounterSettings.init();
 });
 

@@ -2,7 +2,7 @@
 	"name": "random-encounters",
 	"title": "Random Encounters",
 	"description": "Create a random encounter for a scene and trigger them manually or time based",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"author": "veevelder",
 	"minimumCoreVersion": "0.7.1",
   	"compatibleCoreVersion": "0.7.8",

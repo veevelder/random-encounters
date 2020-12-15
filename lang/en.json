@@ -8,12 +8,18 @@
 	"RandomEncounter.intro": "To Create a new Random Encounter, click the Add Encounter button at the bottom, Give it a name, Select a scene, Set how often to roll the table (optional), Set Chance for rolling the table (optional), Create or Link to a RollTable",
 	"RandomEncounter.name.label": "Encounter Name",
 	"RandomEncounter.scene.label": "Scene",
-	"RandomEncounter.time.label": "Tigger Encounter Time in minutes (optional)",
-	"RandomEncounter.chance.label": "Dice Formula (optional)",
+	"RandomEncounter.rooms.label": "Rooms",
+	"RandomEncounter.rooms.hint": "OPTIONAL: Define specific rooms for random encounters using drawing text, will check if any PC is in room to trigger a random encounter. Multiple rooms split by a comma ','",
+	"RandomEncounter.time.label": "Time, in minutes",
+	"RandomEncounter.time.hint": "OPTIONAL: Uses about-time to trigger the random encounter",
+	"RandomEncounter.chance.label": "Dice Formula",
+	"RandomEncounter.chance.hint": "OPTIONAL: The dice formula requred to check if an encounter happens, ex: 1d12, 1d20",
+	"RandomEncounter.onresult.label": "On Result",
+	"RandomEncounter.onresult.hint": "REQUIRED if using Dice Formula: Trigger RollTable on dice formula result, use - for ranges i.e. 18-20",
 	"RandomEncounter.rolltable.label": "RollTable",
 	"RandomEncounter.add": "Add Encounter",
 	"RandomEncounter.NewRollTable": "New RollTable",
 	"RandomEncounter.SaveNameError": "You must provide an Encounter Name",
 	"RandomEncounter.SaveSceneError": "You must provide a Scene",
-	"RandomEncounter.SaveRollTableError": "You must provide a RollTable"	
+	"RandomEncounter.SaveRollTableError": "You must provide a RollTable"
 }

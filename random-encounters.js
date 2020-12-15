@@ -1,8 +1,6 @@
 import settingsExtender from './settings-extender.js';
 settingsExtender();
 
-//CONFIG["random-encounter-hotkey"] = ""
-
 export class RandomEncounterSettings extends FormApplication {
 	static init() {
 		game.settings.registerMenu("random-encounter", "template", {
@@ -27,11 +25,8 @@ export class RandomEncounterSettings extends FormApplication {
 			hint: "RandomEncounter.KeybindHint",
 			scope: "world",
 			config: true,
-			default: "",
+			default: "Shift + R",
 			type: window.Azzu.SettingsTypes.KeyBinding,
-			//onChange: (key) => {
-			//	CONFIG["random-encounter-hotkey"] = key;
-			//}
 		});
 	};
 	
@@ -121,8 +116,10 @@ export class RandomEncounterSettings extends FormApplication {
 		let updateData = {
 			"name": "",
 			"scene": "",
+			"rooms": "",
 			"time": "",
 			"chance": "",
+			"onresult": "",
 			"rolltable": "",
 			"timeout_id": ""
 		}
@@ -163,11 +160,7 @@ export class RandomEncounterSettings extends FormApplication {
 }
 
 
-let doEncounter = async (encounter) => {
-	RandomEncounter.doRandomEncounter(encounter);
-}
-
-class RandomEncounter {
+export class RandomEncounter {
 	static printMessage(title, message){
 		let chatData = {
 			user : game.user._id,
@@ -184,7 +177,7 @@ class RandomEncounter {
 		} else {
 			//pause game if not already paused
 			if(!game.paused) {
-				game.togglePause()
+				game.togglePause(true, true)
 			}
 			//play random encounter sound effect
 			message += result;
@@ -192,50 +185,139 @@ class RandomEncounter {
 		RandomEncounter.printMessage(title, message);
 	}
 	
-	static doRandomEncounters() {
-		let active_scene = game.scenes.filter(a => a.active)[0].name;
-		let encounters = game.settings.get("random-encounter", "encounters").filter(a => a.scene ==  active_scene);
-		for(var i = 0; i < encounters.length; i++) {
-			//do roll check if one is set
-			let doRollTable = false;
-			if(encounters[i].chance == "") {
-				doRollTable = true;
-			}
-			else {
-				if(new Roll(encounters[i].chance, {}).roll().total == 1) {
-					doRollTable = true;
+	static async checkRooms(scene, rooms) {
+		//if no room is defined then just return
+		if (rooms == "") {
+			return true;
+		}
+		let room_arr = []
+		if (rooms.includes(",")) {
+			room_arr = rooms.split(",");
+		}
+		else {
+			room_arr.push(rooms);
+		}
+		
+		//get a list of pc tokens
+		let pcs = game.actors.filter(a => a.hasPlayerOwner)
+		for (var r = 0; r < room_arr.length; r++) {
+			let room = scene.data.drawings.find(a => a.text == room_arr[r]);
+			// loop over the pcs
+			for (var i = 0; i < pcs.length; i++) {
+				//get any active tokens
+				let tokens = await pcs[i].getActiveTokens()
+				for(var j = 0; j < tokens.length; j++) {
+				let point = {x: tokens[j].x, y: tokens[j].y};
+					//check for image rotation and fix token points to match
+					if (room.rotation) {
+						const r = (-room.rotation) * Math.PI / 180;
+						const center = {
+							x: room.x + room.width / 2, 
+							y: room.y + room.height / 2
+						}
+						point = {
+							x: center.x + (point.x - center.x) * Math.cos(r) - (point.y - center.y) * Math.sin(r),
+							y: center.y + (point.x - center.x) * Math.sin(r) + (point.y - center.y) * Math.cos(r)
+						}
+					}
+					//check if token is within the drawing box
+					const inBox = point.x >= room.x && point.x <= room.x + room.width && point.y >= room.y && point.y <= room.y + room.height;
+					if (inBox) {
+						//if its a rectangle then we good
+						if (room.type === CONST.DRAWING_TYPES.RECTANGLE) {
+							return true;
+						}
+						//make sure token is within the ellipse
+						if (room.type === CONST.DRAWING_TYPES.ELLIPSE) {
+							if (room.width && room.height) {
+								const dx = room.x + room.width / 2 - point.x;
+								const dy = room.y + room.height / 2 - point.y;
+								let in_ellipse = 4 * (dx * dx) / (room.width * room.width) + 4 * (dy * dy) / (room.height * room.height) <= 1;
+								if (in_ellipse) {
+									return true;
+								}
+							}
+						}
+						//check if token is within any of the points
+						if (room.type === CONST.DRAWING_TYPES.POLYGON) {
+							const cx = point.x - room.x;
+							const cy = point.y - room.y;
+							let w = 0;
+							for (let i0 = 0; i0 < room.points.length; ++i0) {
+								let i1 = i0 + 1 === room.points.length ? 0 : i0 + 1;
+								if (room.points[i0][1] <= cy && room.points[i1][1] > cy && (room.points[i1][0] - room.points[i0][0]) * (cy - room.points[i0][1]) - (room.points[i1][1] - room.points[i0][1]) * (cx - room.points[i0][0]) > 0) {
+									++w;
+								}
+								if (room.points[i0][1] > cy && room.points[i1][1] <= cy && (room.points[i1][0] - room.points[i0][0]) * (cy - room.points[i0][1]) - (room.points[i1][1] - room.points[i0][1]) * (cx - room.points[i0][0]) < 0) {
+									--w;
+								}
+							}
+							if (w !== 0) {
+								return true;
+							}
+						}	
+					}
 				}
 			}
+		}
+		
+		//if gotten this far no room matched so return false;
+		return false;
+	}
+	
+	static doRandomEncounters() {
+		//if in combat dont do random encounter if not the gm dont do random encounter
+		if (game.combat || !game.users.filter(a => a.id == game.userId)[0].isGM) {
+			return false;
+		}
 
-			if(doRollTable) {
-				let tableResult = game.tables.entities.find(t => t.name == encounters[i].rolltable).roll().results[0]
-				RandomEncounter.printEncounter(encounters[i].name, tableResult.text);
-			}
-			else {
-				RandomEncounter.printMessage(encounters[i].name, "No Random Encounter");
-			}
+		let active_scene = game.scenes.find(a => a.active).name;
+		let encounters = game.settings.get("random-encounter", "encounters").filter(a => a.scene ==  active_scene);
+		for(var i = 0; i < encounters.length; i++) {
+			RandomEncounter.doRandomEncounter(encounters[i])
 		}
 	}
 	
-	static doRandomEncounter(encounter) {
-		let active_scene = game.scenes.filter(a => a.active)[0].name;
-		if (encounter.scene == active_scene) {
-			//do roll check if one is set
-			let doRollTable = false;
-			if(encounter.chance == "") {
-				doRollTable = true;
-			}
-			else {
-				if(new Roll(encounter.chance, {}).roll().total == 1) {
+	static async doRandomEncounter(encounter) {
+		//if in combat dont do random encounter if not the gm dont do random encounter
+		if (game.combat || !game.users.filter(a => a.id == game.userId)[0].isGM) {
+			return false;
+		}
+
+		let scene = game.scenes.find(a => a.active);
+		if (encounter.scene == scene.name) {
+			let inroom = await RandomEncounter.checkRooms(scene, encounter.rooms);
+			if (inroom) {
+				//do roll check if one is set
+				let doRollTable = false;
+				if(encounter.chance == "") {
 					doRollTable = true;
 				}
-			}
-			if(doRollTable) {
-				let tableResult = game.tables.entities.find(t => t.name == encounter.rolltable).roll().results[0]
-				RandomEncounter.printEncounter(encounter.name, tableResult.text);
-			}
-			else {
-				RandomEncounter.printMessage(encounter.name, "No Random Encounter");
+				else {
+					//do roll
+					var roll = new Roll(encounter.chance, {}).roll().total;
+					//check for range
+					if(encounter.onresult.includes("-")) {
+						var range = encounter.onresult.split("-");
+						//if roll is within range do table
+						if(roll >= parseInt(range[0]) && roll <= parseInt(range[1])) {
+							doRollTable = true;
+						}
+					}
+					//check roll against value
+					else {
+						if(roll == parseInt(encounter.onresult)) {
+							doRollTable = true;
+						}
+					}
+				}
+				if(doRollTable) {
+					let tableResult = game.tables.entities.find(t => t.name == encounter.rolltable).roll().results[0]
+					RandomEncounter.printEncounter(encounter.name, tableResult.text);
+				}
+				else {
+					RandomEncounter.printMessage(encounter.name, "No Random Encounter");
+				}
 			}
 		}
 	}
@@ -254,6 +336,9 @@ class RandomEncounter {
 				if(encounters[i].timeout_id != "") {
 					game.Gametime.clearTimeout(encounters[i].timeout_id)
 				}
+				let doEncounter = async (encounter) => {
+					RandomEncounter.doRandomEncounter(encounter);
+				}
 				encounters[i].timeout_id = game.Gametime.doEvery({minutes: encounters[i].time}, doEncounter, encounters[i])
 			}
 			game.settings.set("random-encounter", "encounters", encounters)
@@ -264,7 +349,8 @@ class RandomEncounter {
 
 Hooks.once("init", function () {
 	window.addEventListener("keydown", ev => {
-		if (ev.repeat || document.activeElement.tagName !== "BODY")
+		//only allow for non repeat keys on the body by the GM
+		if (ev.repeat || document.activeElement.tagName !== "BODY" || !game.users.filter(a => a.id == game.userId)[0].isGM)
 			return true;
 
 		let setting_key = game.settings.get("random-encounter", "key")
@@ -273,6 +359,7 @@ Hooks.once("init", function () {
 			if (window.Azzu.SettingsTypes.KeyBinding.eventIsForBinding(ev, key)) {
 				ev.preventDefault();
 				ev.stopPropagation();
+				console.log("doing encounter");
 				RandomEncounter.doRandomEncounters();
 			}
 		}

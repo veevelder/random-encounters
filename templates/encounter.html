@@ -7,21 +7,13 @@
 		<div class='flexrow encounter-entry' data-idx="{{idx}}">
 			<div class='flexcol'>
 				<div class='form-group'>
-					<label for="{{idx}}.name">
-						{{localize 'RandomEncounter.name.label'}}
-					</label>
+					<label for="{{idx}}.name">{{localize 'RandomEncounter.name.label'}}</label>
 					<div class='form-fields'>
-						<input
-							type='text'
-							name="{{idx}}.name"
-							value="{{encounter.name}}"
-						/>
+						<input type='text' name="{{idx}}.name" value="{{encounter.name}}"/>
 					</div>
 				</div>
 				<div class='form-group'>
-					<label for="{{idx}}.scene">
-						{{localize 'RandomEncounter.scene.label'}}
-					</label>
+					<label for="{{idx}}.scene">{{localize 'RandomEncounter.scene.label'}}</label>
 					<select name="{{idx}}.scene">
 						<option value=""></option>
 						{{#each encounter.scenes as | scene|}}
@@ -36,33 +28,35 @@
 					</select>
 				</div>
 				<div class='form-group'>
-					<label for="{{idx}}.time">
-						{{localize 'RandomEncounter.time.label'}}
-					</label>
+					<label for="{{idx}}.rooms">{{localize 'RandomEncounter.rooms.label'}}</label>
 					<div class='form-fields'>
-						<input
-							type='text'
-							name="{{idx}}.time"
-							value="{{encounter.time}}"
-						/>
+						<input type='text' name="{{idx}}.rooms" value="{{encounter.rooms}}"/>
 					</div>
+					<p class="notes">{{localize 'RandomEncounter.rooms.hint'}}</p>
 				</div>
 				<div class='form-group'>
-					<label for="{{idx}}.chance">
-						{{localize 'RandomEncounter.chance.label'}}
-					</label>
+					<label for="{{idx}}.time">{{localize 'RandomEncounter.time.label'}}</label>
 					<div class='form-fields'>
-						<input
-							type='text'
-							name="{{idx}}.chance"
-							value="{{encounter.chance}}"
-						/>
+						<input type='text' name="{{idx}}.time" value="{{encounter.time}}"/>
 					</div>
+					<p class="notes">{{localize 'RandomEncounter.time.hint'}}</p>
 				</div>
 				<div class='form-group'>
-					<label for="{{idx}}.rolltable">
-						{{localize 'RandomEncounter.rolltable.label'}}
-					</label>
+					<label for="{{idx}}.chance">{{localize 'RandomEncounter.chance.label'}}</label>
+					<div class='form-fields'>
+						<input type='text' name="{{idx}}.chance" value="{{encounter.chance}}"/>
+					</div>
+					<p class="notes">{{localize 'RandomEncounter.chance.hint'}}</p>
+				</div>
+				<div class='form-group'>
+					<label for="{{idx}}.onresult">{{localize 'RandomEncounter.onresult.label'}}</label>
+					<div class='form-fields'>
+						<input type='text' name="{{idx}}.onresult" value="{{encounter.onresult}}"/>
+					</div>
+					<p class="notes">{{localize 'RandomEncounter.onresult.hint'}}</p>
+				</div>
+				<div class='form-group'>
+					<label for="{{idx}}.rolltable">{{localize 'RandomEncounter.rolltable.label'}}</label>
 					<select name="{{idx}}.rolltable" data-dtype='String'>
 						<option value=""></option>
 						{{#each encounter.rolltables as | rolltable|}}
@@ -81,9 +75,7 @@
 				</button>
 			</div>
 			<div class='flexcol remove-encounter-wrapper'>
-				<button class='remove-encounter' data-idx="{{idx}}">
-					<i class='far fa-trash-alt'></i>
-				</button>
+				<button class='remove-encounter' data-idx="{{idx}}"><i class='far fa-trash-alt'></i></button>
 			</div>
 		</div>
 	{{/each}}

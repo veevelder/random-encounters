@@ -2,7 +2,7 @@
 	"name": "random-encounters",
 	"title": "Random Encounters",
 	"description": "Create a random encounter for a scene and trigger them manually or time based",
-	"version": "0.1.1",
+	"version": "0.1.5",
 	"author": "veevelder",
 	"minimumCoreVersion": "0.7.1",
   	"compatibleCoreVersion": "0.7.8",
@@ -19,13 +19,12 @@
 	],
 	"dependencies": [
 		{
-			"name": "about-time",
-			"manifest": "https://gitlab.com/tposney/about-time/raw/master/package/module.json"
+			"name": "about-time"
 		}
 	],
 	"system": "dnd5e",
 	"url" : "https://github.com/veevelder/random-encounters",
-	"download" : "https://github.com/veevelder/random-encounters/releases/download/0.1.0/random-encounters.zip",
+	"download" : "https://github.com/veevelder/random-encounters/releases/download/0.1.5/random-encounters.zip",
 	"manifest" : "https://raw.githubusercontent.com/veevelder/random-encounters/main/module.json",
 	"license": "LICENSE",
 	"readme": "README.md"

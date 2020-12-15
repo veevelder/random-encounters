@@ -359,7 +359,6 @@ Hooks.once("init", function () {
 			if (window.Azzu.SettingsTypes.KeyBinding.eventIsForBinding(ev, key)) {
 				ev.preventDefault();
 				ev.stopPropagation();
-				console.log("doing encounter");
 				RandomEncounter.doRandomEncounters();
 			}
 		}

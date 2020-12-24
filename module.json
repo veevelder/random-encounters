@@ -5,7 +5,7 @@
 	"version": "0.1.6",
 	"author": "veevelder",
 	"minimumCoreVersion": "0.7.1",
-  	"compatibleCoreVersion": "0.7.8",
+  	"compatibleCoreVersion": "0.7.9",
 	"esmodules": ["random-encounters.js"],
 	"languages": [
 		{

@@ -17,6 +17,8 @@
 	"RandomEncounter.onresult.label": "On Result",
 	"RandomEncounter.onresult.hint": "REQUIRED if using Dice Formula: Trigger RollTable on dice formula result, use - for ranges i.e. 18-20",
 	"RandomEncounter.rolltable.label": "RollTable",
+	"RandomEncounter.daynight.label": "Roll Day or Night?",
+	"RandomEncounter.daynight.hint": "OPTIONAL: Select None for both, otherwise will use Lighting settings to determine Day/Night",
 	"RandomEncounter.add": "Add Encounter",
 	"RandomEncounter.NewRollTable": "New RollTable",
 	"RandomEncounter.SaveNameError": "You must provide an Encounter Name",

@@ -62,6 +62,12 @@ export class RandomEncounterSettings extends FormApplication {
 					"selected": selected
 				});
 			});
+			encounters[i]["daynight_options"] = [{"name": "None", "selected": false}, {"name": "Day", "selected": false}, {"name": "Night", "selected": false}]
+			for(var j = 0; j < encounters[i]["daynight_options"].length; j++) {
+				if(encounters[i]["daynight_options"][j]["name"] == encounters[i].daynight) {
+					encounters[i]["daynight_options"][j]["selected"] = true;
+				}
+			}
 			
 			encounters[i]["rolltables"] = [];
 			game.tables.map(a => a.name).forEach(function(name) {
@@ -118,6 +124,7 @@ export class RandomEncounterSettings extends FormApplication {
 			"scene": "",
 			"rooms": "",
 			"time": "",
+			"daynight": "",
 			"chance": "",
 			"onresult": "",
 			"rolltable": "",
@@ -286,37 +293,52 @@ export class RandomEncounter {
 
 		let scene = game.scenes.find(a => a.active);
 		if (encounter.scene == scene.name) {
-			let inroom = await RandomEncounter.checkRooms(scene, encounter.rooms);
-			if (inroom) {
-				//do roll check if one is set
-				let doRollTable = false;
-				if(encounter.chance == "") {
-					doRollTable = true;
-				}
-				else {
-					//do roll
-					var roll = new Roll(encounter.chance, {}).roll().total;
-					//check for range
-					if(encounter.onresult.includes("-")) {
-						var range = encounter.onresult.split("-");
-						//if roll is within range do table
-						if(roll >= parseInt(range[0]) && roll <= parseInt(range[1])) {
-							doRollTable = true;
-						}
+			//check for daynight options
+			let do_check = false;
+			//check for day
+			if (encounter.daynight == "Day" && scene.data.darkness == 0) {
+				do_check = true;
+			}
+			else if (encounter.daynight == "Night" && scene.data.darkness == 1) {
+				do_check = true;
+			}
+			else if (encounter.daynight == "None") {
+				do_check = true;
+			}
+			console.log(do_check, encounter.daynight,scene, scene.data.darkness)
+			if (do_check) {
+				let inroom = await RandomEncounter.checkRooms(scene, encounter.rooms);
+				if (inroom) {
+					//do roll check if one is set
+					let doRollTable = false;
+					if(encounter.chance == "") {
+						doRollTable = true;
 					}
-					//check roll against value
 					else {
-						if(roll == parseInt(encounter.onresult)) {
-							doRollTable = true;
+						//do roll
+						var roll = new Roll(encounter.chance, {}).roll().total;
+						//check for range
+						if(encounter.onresult.includes("-")) {
+							var range = encounter.onresult.split("-");
+							//if roll is within range do table
+							if(roll >= parseInt(range[0]) && roll <= parseInt(range[1])) {
+								doRollTable = true;
+							}
+						}
+						//check roll against value
+						else {
+							if(roll == parseInt(encounter.onresult)) {
+								doRollTable = true;
+							}
 						}
 					}
-				}
-				if(doRollTable) {
-					let tableResult = game.tables.entities.find(t => t.name == encounter.rolltable).roll().results[0]
-					RandomEncounter.printEncounter(encounter.name, tableResult.text);
-				}
-				else {
-					RandomEncounter.printMessage(encounter.name, "No Random Encounter");
+					if(doRollTable) {
+						let tableResult = game.tables.entities.find(t => t.name == encounter.rolltable).roll().results[0]
+						RandomEncounter.printEncounter(encounter.name, tableResult.text);
+					}
+					else {
+						RandomEncounter.printMessage(encounter.name, "No Random Encounter");
+					}
 				}
 			}
 		}

@@ -1,4 +1,4 @@
-# Random Encounters module for FVTT,
+# Random Encounters module for FVTT
 
 Adds the ability to create Random Encounters for Scenes.
 

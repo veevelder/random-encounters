@@ -305,7 +305,6 @@ export class RandomEncounter {
 			else if (encounter.daynight == "None") {
 				do_check = true;
 			}
-			console.log(do_check, encounter.daynight,scene, scene.data.darkness)
 			if (do_check) {
 				let inroom = await RandomEncounter.checkRooms(scene, encounter.rooms);
 				if (inroom) {

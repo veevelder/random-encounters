@@ -41,15 +41,15 @@ It will create a new Random Encounter Template.
 
 ![Random Encounter Example](images/empty-rnd.png)
 
-* Encounter Name - A name for your encounter, will be used when displaying a chat message.
-* Scene - A scene to tie the random encounter to, when rolling for random encounters it will only roll the encounters for the active scene that has Player Characters on it.
-* Rooms - An Optional Setting. If your scene has specific areas that have random encounter you can use the drawing tools to create rooms/areas in a scene. If a Player Character is located within the room in the scene, it will trigger the random encounter.
-* Time, in minutes - An Optional Setting. If you have about-time module installed, you can define a duration in minutes to automatically trigger a random encounter.
-* Roll Day or Night? - An Optional Setting. Using the Lighting Controls to Transition to Daylight/Darkness, you can set optional settings if your random encounter needs to be triggered at day/night. If neither is required use None (the default) to trigger on both settings.
-* Dice Formula - An Optional Setting. If your random encounter has a chance to trigger, for example on a roll of a 1d20 result of 20 do a random encounter. If using this setting you must set a value in the On Result setting.
-* On Result - Required if using Dice Formula. Either a set number (1 or 20) or a range of numbers (1-3 or 18-20). Ranges are a lower number hyphen and higher number. If on the roll of 1d20 the number falls within the range or is an exact match will trigger the random encounter.
-* RollTable - Select a RollTable to roll. These RollTables will have the random encounter table defined as needed.
-* New RollTable - Will open a RollTable Creation Dialog box, just like if you where to do so on the RollTable tab. Note: If you create a RollTable with the Settings window open it will not be displayed at first, you will need to close then reopen the settings.
+* **Encounter Name** - A name for your encounter, will be used when displaying a chat message.
+* **Scene** - A scene to tie the random encounter to, when rolling for random encounters it will only roll the encounters for the active scene that has Player Characters on it.
+* **Rooms** - An Optional Setting. If your scene has specific areas that have random encounter you can use the drawing tools to create rooms/areas in a scene. If a Player Character is located within the room in the scene, it will trigger the random encounter.
+* **Time**, in minutes - An Optional Setting. If you have about-time module installed, you can define a duration in minutes to automatically trigger a random encounter.
+* **Roll Day or Night?** - An Optional Setting. Using the Lighting Controls to Transition to Daylight/Darkness, you can set optional settings if your random encounter needs to be triggered at day/night. If neither is required use None (the default) to trigger on both settings.
+* **Dice Formula** - An Optional Setting. If your random encounter has a chance to trigger, for example on a roll of a 1d20 result of 20 do a random encounter. If using this setting you must set a value in the On Result setting.
+* **On Result** - Required if using Dice Formula. Either a set number (1 or 20) or a range of numbers (1-3 or 18-20). Ranges are a lower number hyphen and higher number. If on the roll of 1d20 the number falls within the range or is an exact match will trigger the random encounter.
+* **RollTable** - Select a RollTable to roll. These RollTables will have the random encounter table defined as needed.
+* **New RollTable** - Will open a RollTable Creation Dialog box, just like if you where to do so on the RollTable tab. Note: If you create a RollTable with the Settings window open it will not be displayed at first, you will need to close then reopen the settings.
 
 Example of a RollTable for Random Encounters
 

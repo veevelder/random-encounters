@@ -26,6 +26,8 @@ You can find the settings for Random Encounters under General Module Settings (N
 ![Settings](images/settings.png)
 
 Click on Configure to add new Random Encounters.
+
+
 You can change the Hot Key to trigger any Random Encounters.
 
 
@@ -37,7 +39,7 @@ Click on the Add Encounter button.
 
 It will create a new Random Encounter Template.
 
-![Random Encounter Settings](images/rnd-settings.png)
+![Random Encounter Example](images/empty-rnd.png)
 
 * Encounter Name - A name for your encounter, will be used when displaying a chat message.
 * Scene - A scene to tie the random encounter to, when rolling for random encounters it will only roll the encounters for the active scene that has Player Characters on it.
@@ -51,7 +53,7 @@ It will create a new Random Encounter Template.
 
 Example of a RollTable for Random Encounters
 
-![Random Encounter RollTable Example](images/rnd-settings.png)
+![Random Encounter RollTable Example](images/rolltable-example.png)
 
 See https://foundryvtt.com/article/roll-tables/ for more examples on how RollTables work.
 
@@ -79,12 +81,18 @@ Set the Encounter Name. Select the Scene for the random encounter. Set a Dice Fo
 ![Random Encounter Scene Result](images/rnd-scene-roll-result.png)
 
 Either hit the Trigger Random Encounter Hot Key or if you specified a time wait for the random encounter to be triggered.
+
+
 First chat box is the result of the Dice Formula not rolling the On Result condition.
+
+
 Second chat box is the result of the Dice Formula rolling the On Result condition.
 
 ### Random Encounter for a Room/Area within a Scene
 
 If you have a random encounter that only needs to happen within a specific area or room within a scene you can using the drawing tools to create a room/area. Make sure to name the drawing, Random Encounters will check for use the name to find the room/area to check if Player Characters are within the room.
+
+
 NOTE: if no player characters are within a room and you trigger a random encounter, either by hitting the hot key or the specified time is reached, not chat box will be displayed.
 
 #### RollTable
@@ -96,6 +104,8 @@ Defined two room Random Encounter RollTables.
 ![Random Encounter Room Setup](images/rnd-rooms-setuppng.png)
 
 Use the drawing tools to create a drawing, Random Encounter can use either the Rectangle, Ellipse, or Polygon drawings to determine the area/room trigger.
+
+
 NOTE: make sure to name the drawing using the Text Label settings. This will be used to tie back to the Random Encounter.
 
 ![Random Encounter Room Drawing](images/drawing-settings.png)
@@ -110,13 +120,21 @@ Setup two random encounters for each room within the scene. Settings to Note:
 ![Random Encounter Room Result](images/rnd-rooms-roll.png)
 
 Rolling for a random encounter in the test room.
+
+
 First chat box is a success of a random encounter trigger.
+
+
 Second chat box is a failure of a random encounter trigger.
 
 ![Random Encounter Room Result 2](images/rnd-rooms-roll2.png)
 
 Rolling for a random encounter in the test1 room.
+
+
 First chat box is a success of a random encounter trigger.
+
+
 Second chat box is a failure of a random encounter trigger.
 
 ### Random Encounter for a Day/Night

@@ -1,3 +1,4 @@
+![Latest Release Download Count](https://img.shields.io/github/downloads/veevelder/quick-combat/latest/random-encounters.zip) ![Forge Installs](https://img.shields.io/badge/dynamic/json?label=Forge%20Installs&query=package.installs&suffix=%25&url=https%3A%2F%2Fforge-vtt.com%2Fapi%2Fbazaar%2Fpackage%2Frandom-encounters&colorB=4aa94a) ![Foundry Core Compatible Version](https://img.shields.io/badge/dynamic/json.svg?url=https%3A%2F%2Fraw.githubusercontent.com%2Fveevelder%2Frandom-encounters%2Fmaster%2Fmodule.json&label=Foundry%20Version&query=$.compatibleCoreVersion&colorB=orange)
 # Random Encounters module for FVTT
 
 Adds the ability to create Random Encounters for Scenes.

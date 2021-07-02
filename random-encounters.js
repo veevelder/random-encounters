@@ -1,55 +1,28 @@
-import settingsExtender from './settings-extender.js';
-settingsExtender();
+import {KeyBinding} from '../settings-extender/settings-extender.js'
 
 export class RandomEncounterSettings extends FormApplication {
-	static init() {
-		game.settings.registerMenu("random-encounter", "template", {
-			name: "RandomEncounter.button.name",
-			label: "RandomEncounter.button.label",
-			hint: "RandomEncounter.button.hint",
-			type: RandomEncounterSettings,
-			restricted: true
-		});
-		
-		game.settings.register("random-encounter", "encounters", {
-			name: "",
-			hint: "",
-			scope: "world",
-			config: false,
-			default: [],
-			type: Object
-		});
-
-		game.settings.register("random-encounter", "key", {
-			name: "RandomEncounter.Keybind",
-			hint: "RandomEncounter.KeybindHint",
-			scope: "world",
-			config: true,
-			default: "Shift + R",
-			type: window.Azzu.SettingsTypes.KeyBinding,
-		});
-	};
-	
-	/** @override */
-	static get defaultOptions() {
-		return {
-			...super.defaultOptions,
-			template: "modules/random-encounters/templates/encounter.html",
-			height: 'auto',
-			title: game.i18n.localize("RandomEncounter.button.name"),
-			width: 600,
-			classes: ["random-encounter", "settings"],
-			submitOnClose: false,
-		};
-	}
 
 	constructor(object = {}, options) {
 		super(object, options);
 	}
 
 	/** @override */
+	static get defaultOptions() {
+		return mergeObject(super.defaultOptions, {
+			classes: ["random-encounters", "settings"],
+			popOut: true,
+			template: "modules/random-encounters/templates/encounters.html",
+			height: 'auto',
+			id: 'random-encounters-application',
+			title: game.i18n.localize("RandomEncounter.button.name"),
+			width: 600,
+			submitOnClose: false,
+		});
+	}
+
+	/** @override */
 	getData() {
-		let encounters = game.settings.get("random-encounter", "encounters");
+		let encounters = game.settings.get("random-encounters", "encounters");
 		for (var i = 0; i < encounters.length; i++) {
 			encounters[i]["scenes"] = [];
 			game.scenes.map(a => a.name).forEach(function(name) {
@@ -104,7 +77,7 @@ export class RandomEncounterSettings extends FormApplication {
 			value.time = parseInt(value.time);
 			encounters.push(value);
 		}
-		await game.settings.set("random-encounter", "encounters", encounters);
+		await game.settings.set("random-encounters", "encounters", encounters);
 		RandomEncounter.registerRandomEncounters();
 	}
 
@@ -118,7 +91,7 @@ export class RandomEncounterSettings extends FormApplication {
 
 	async _onAddEncounter(event) {
 		event.preventDefault();
-		let encounters = game.settings.get("random-encounter", "encounters");
+		let encounters = game.settings.get("random-encounters", "encounters");
 		let updateData = {
 			"name": "",
 			"scene": "",
@@ -131,7 +104,7 @@ export class RandomEncounterSettings extends FormApplication {
 			"timeout_id": ""
 		}
 		encounters.push(updateData);
-		await game.settings.set("random-encounter", "encounters", encounters)
+		await game.settings.set("random-encounters", "encounters", encounters)
 		this.render();
 	}
 
@@ -142,13 +115,13 @@ export class RandomEncounterSettings extends FormApplication {
 			return true;
 		}
 		
-		let encounters = game.settings.get("random-encounter", "encounters");
+		let encounters = game.settings.get("random-encounters", "encounters");
 		
 		let rmEncounter = encounters[el.data("idx")]
 		game.Gametime.clearTimeout(rmEncounter.timeout_id)
 		game.Gametime._save();
 		encounters.splice(el.data("idx"), 1);
-		game.settings.set("random-encounter", "encounters", encounters)
+		game.settings.set("random-encounters", "encounters", encounters)
 		el.remove();
 		await this._onSubmit(event, { preventClose: true });
 		this.render();
@@ -170,9 +143,9 @@ export class RandomEncounterSettings extends FormApplication {
 export class RandomEncounter {
 	static printMessage(title, message){
 		let chatData = {
-			user : game.user._id,
+			user : game.user.id,
 			content : "<h2>Random Encounter for " + title + "</h2>" + message,
-			whisper : game.users.entities.filter(u => u.isGM).map(u => u._id)
+			whisper : game.users.contents.filter(u => u.isGM).map(u => u.id)
 		};
 		ChatMessage.create(chatData,{});
 	}
@@ -208,61 +181,64 @@ export class RandomEncounter {
 		//get a list of pc tokens
 		let pcs = game.actors.filter(a => a.hasPlayerOwner)
 		for (var r = 0; r < room_arr.length; r++) {
-			let room = scene.data.drawings.find(a => a.text == room_arr[r]);
-			// loop over the pcs
-			for (var i = 0; i < pcs.length; i++) {
-				//get any active tokens
-				let tokens = await pcs[i].getActiveTokens()
-				for(var j = 0; j < tokens.length; j++) {
-				let point = {x: tokens[j].x, y: tokens[j].y};
-					//check for image rotation and fix token points to match
-					if (room.rotation) {
-						const r = (-room.rotation) * Math.PI / 180;
-						const center = {
-							x: room.x + room.width / 2, 
-							y: room.y + room.height / 2
-						}
-						point = {
-							x: center.x + (point.x - center.x) * Math.cos(r) - (point.y - center.y) * Math.sin(r),
-							y: center.y + (point.x - center.x) * Math.sin(r) + (point.y - center.y) * Math.cos(r)
-						}
-					}
-					//check if token is within the drawing box
-					const inBox = point.x >= room.x && point.x <= room.x + room.width && point.y >= room.y && point.y <= room.y + room.height;
-					if (inBox) {
-						//if its a rectangle then we good
-						if (room.type === CONST.DRAWING_TYPES.RECTANGLE) {
-							return true;
-						}
-						//make sure token is within the ellipse
-						if (room.type === CONST.DRAWING_TYPES.ELLIPSE) {
-							if (room.width && room.height) {
-								const dx = room.x + room.width / 2 - point.x;
-								const dy = room.y + room.height / 2 - point.y;
-								let in_ellipse = 4 * (dx * dx) / (room.width * room.width) + 4 * (dy * dy) / (room.height * room.height) <= 1;
-								if (in_ellipse) {
-									return true;
-								}
+			let room = scene.data.drawings.find(a => a.data.text == room_arr[r]);
+			if (room) {
+				room = room.data;
+				// loop over the pcs
+				for (var i = 0; i < pcs.length; i++) {
+					//get any active tokens
+					let tokens = await pcs[i].getActiveTokens()
+					for(var j = 0; j < tokens.length; j++) {
+						let point = {x: tokens[j].x, y: tokens[j].y};
+						//check for image rotation and fix token points to match
+						if (room.rotation) {
+							const r = (-room.rotation) * Math.PI / 180;
+							const center = {
+								x: room.x + room.width / 2, 
+								y: room.y + room.height / 2
+							}
+							point = {
+								x: center.x + (point.x - center.x) * Math.cos(r) - (point.y - center.y) * Math.sin(r),
+								y: center.y + (point.x - center.x) * Math.sin(r) + (point.y - center.y) * Math.cos(r)
 							}
 						}
-						//check if token is within any of the points
-						if (room.type === CONST.DRAWING_TYPES.POLYGON) {
-							const cx = point.x - room.x;
-							const cy = point.y - room.y;
-							let w = 0;
-							for (let i0 = 0; i0 < room.points.length; ++i0) {
-								let i1 = i0 + 1 === room.points.length ? 0 : i0 + 1;
-								if (room.points[i0][1] <= cy && room.points[i1][1] > cy && (room.points[i1][0] - room.points[i0][0]) * (cy - room.points[i0][1]) - (room.points[i1][1] - room.points[i0][1]) * (cx - room.points[i0][0]) > 0) {
-									++w;
-								}
-								if (room.points[i0][1] > cy && room.points[i1][1] <= cy && (room.points[i1][0] - room.points[i0][0]) * (cy - room.points[i0][1]) - (room.points[i1][1] - room.points[i0][1]) * (cx - room.points[i0][0]) < 0) {
-									--w;
-								}
-							}
-							if (w !== 0) {
+						//check if token is within the drawing box
+						const inBox = point.x >= room.x && point.x <= room.x + room.width && point.y >= room.y && point.y <= room.y + room.height;
+						if (inBox) {
+							//if its a rectangle then we good
+							if (room.type === CONST.DRAWING_TYPES.RECTANGLE) {
 								return true;
 							}
-						}	
+							//make sure token is within the ellipse
+							if (room.type === CONST.DRAWING_TYPES.ELLIPSE) {
+								if (room.width && room.height) {
+									const dx = room.x + room.width / 2 - point.x;
+									const dy = room.y + room.height / 2 - point.y;
+									let in_ellipse = 4 * (dx * dx) / (room.width * room.width) + 4 * (dy * dy) / (room.height * room.height) <= 1;
+									if (in_ellipse) {
+										return true;
+									}
+								}
+							}
+							//check if token is within any of the points
+							if (room.type === CONST.DRAWING_TYPES.POLYGON) {
+								const cx = point.x - room.x;
+								const cy = point.y - room.y;
+								let w = 0;
+								for (let i0 = 0; i0 < room.points.length; ++i0) {
+									let i1 = i0 + 1 === room.points.length ? 0 : i0 + 1;
+									if (room.points[i0][1] <= cy && room.points[i1][1] > cy && (room.points[i1][0] - room.points[i0][0]) * (cy - room.points[i0][1]) - (room.points[i1][1] - room.points[i0][1]) * (cx - room.points[i0][0]) > 0) {
+										++w;
+									}
+									if (room.points[i0][1] > cy && room.points[i1][1] <= cy && (room.points[i1][0] - room.points[i0][0]) * (cy - room.points[i0][1]) - (room.points[i1][1] - room.points[i0][1]) * (cx - room.points[i0][0]) < 0) {
+										--w;
+									}
+								}
+								if (w !== 0) {
+									return true;
+								}
+							}	
+						}
 					}
 				}
 			}
@@ -279,7 +255,7 @@ export class RandomEncounter {
 		}
 
 		let active_scene = game.scenes.find(a => a.active).name;
-		let encounters = game.settings.get("random-encounter", "encounters").filter(a => a.scene ==  active_scene);
+		let encounters = game.settings.get("random-encounters", "encounters").filter(a => a.scene ==  active_scene);
 		for(var i = 0; i < encounters.length; i++) {
 			RandomEncounter.doRandomEncounter(encounters[i])
 		}
@@ -315,7 +291,7 @@ export class RandomEncounter {
 					}
 					else {
 						//do roll
-						var roll = new Roll(encounter.chance, {}).roll().total;
+						var roll = new Roll(encounter.chance, {}).evaluate({"async":false}).total;
 						//check for range
 						if(encounter.onresult.includes("-")) {
 							var range = encounter.onresult.split("-");
@@ -332,8 +308,13 @@ export class RandomEncounter {
 						}
 					}
 					if(doRollTable) {
-						let tableResult = game.tables.entities.find(t => t.name == encounter.rolltable).roll().results[0]
-						RandomEncounter.printEncounter(encounter.name, tableResult.text);
+						let tableRoll = await game.tables.find(t => t.name == encounter.rolltable).roll()
+						let tableResult = tableRoll.results[0]
+						let text = tableResult.data.text
+						if (tableResult.data.collection) {
+							text = "@Compendium[" + tableResult.data.collection + "." + tableResult.data.resultId + "]{" + text + "}"
+						}
+						RandomEncounter.printEncounter(encounter.name, text);
 					}
 					else {
 						RandomEncounter.printMessage(encounter.name, "No Random Encounter");
@@ -352,7 +333,7 @@ export class RandomEncounter {
 			if(!game.Gametime.isRunning()) {
 				game.Gametime.startRunning();
 			}
-			let encounters = game.settings.get("random-encounter", "encounters")
+			let encounters = game.settings.get("random-encounters", "encounters")
 			for (var i = 0; i < encounters.length; i++) {
 				if(encounters[i].timeout_id != "") {
 					game.Gametime.clearTimeout(encounters[i].timeout_id)
@@ -362,11 +343,42 @@ export class RandomEncounter {
 				}
 				encounters[i].timeout_id = game.Gametime.doEvery({minutes: encounters[i].time}, doEncounter, encounters[i])
 			}
-			game.settings.set("random-encounter", "encounters", encounters)
+			game.settings.set("random-encounters", "encounters", encounters)
 			game.Gametime._save();
 		}
 	}
 }
+
+Hooks.on("ready", function () {
+	if (!game.users.filter(a => a.id == game.userId)[0].isGM)
+		return true;
+
+	game.settings.registerMenu("random-encounters", "template", {
+		name: "RandomEncounter.button.name",
+		label: "RandomEncounter.button.label",
+		hint: "RandomEncounter.button.hint",
+		type: RandomEncounterSettings,
+		restricted: true
+	});
+	
+	game.settings.register("random-encounters", "encounters", {
+		name: "",
+		hint: "",
+		scope: "world",
+		config: false,
+		default: [],
+		type: Object
+	});
+
+	game.settings.register("random-encounters", "key", {
+		name: "RandomEncounter.Keybind",
+		hint: "RandomEncounter.KeybindHint",
+		scope: "world",
+		config: true,
+		default: "Shift + R",
+		type: KeyBinding,
+	});
+});
 
 Hooks.once("init", function () {
 	window.addEventListener("keydown", ev => {
@@ -374,19 +386,16 @@ Hooks.once("init", function () {
 		if (ev.repeat || document.activeElement.tagName !== "BODY" || !game.users.filter(a => a.id == game.userId)[0].isGM)
 			return true;
 
-		let setting_key = game.settings.get("random-encounter", "key")
+		let setting_key = game.settings.get("random-encounters", "key")
 		if (setting_key != null) {
-			const key = window.Azzu.SettingsTypes.KeyBinding.parse(setting_key)
-			if (window.Azzu.SettingsTypes.KeyBinding.eventIsForBinding(ev, key)) {
+			const key = KeyBinding.parse(setting_key)
+			if (KeyBinding.eventIsForBinding(ev, key)) {
 				ev.preventDefault();
 				ev.stopPropagation();
 				RandomEncounter.doRandomEncounters();
 			}
 		}
 	});
-	
-	
-	RandomEncounterSettings.init();
 });
 
 //Hooks.on("createRollTable", function() {

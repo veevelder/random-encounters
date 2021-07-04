@@ -1,145 +1,5 @@
 import {KeyBinding} from '../settings-extender/settings-extender.js'
 
-export class RandomEncounterSettings extends FormApplication {
-
-	constructor(object = {}, options) {
-		super(object, options);
-	}
-
-	/** @override */
-	static get defaultOptions() {
-		return mergeObject(super.defaultOptions, {
-			classes: ["random-encounters", "settings"],
-			popOut: true,
-			template: "modules/random-encounters/templates/encounters.html",
-			height: 'auto',
-			id: 'random-encounters-application',
-			title: game.i18n.localize("RandomEncounter.button.name"),
-			width: 600,
-			submitOnClose: false,
-		});
-	}
-
-	/** @override */
-	getData() {
-		let encounters = game.settings.get("random-encounters", "encounters");
-		for (var i = 0; i < encounters.length; i++) {
-			encounters[i]["scenes"] = [];
-			game.scenes.map(a => a.name).forEach(function(name) {
-				let selected = false;
-				if(name == encounters[i].scene) {
-					selected = true;
-				}
-				encounters[i]["scenes"].push({
-					"name": name,
-					"selected": selected
-				});
-			});
-			encounters[i]["daynight_options"] = [{"name": "None", "selected": false}, {"name": "Day", "selected": false}, {"name": "Night", "selected": false}]
-			for(var j = 0; j < encounters[i]["daynight_options"].length; j++) {
-				if(encounters[i]["daynight_options"][j]["name"] == encounters[i].daynight) {
-					encounters[i]["daynight_options"][j]["selected"] = true;
-				}
-			}
-			
-			encounters[i]["rolltables"] = [];
-			game.tables.map(a => a.name).forEach(function(name) {
-				let selected = false;
-				if (name == encounters[i].rolltable) {
-					selected = true;
-				}
-				encounters[i]["rolltables"].push({
-					"name": name,
-					"selected": selected
-				});
-			});
-		}
-		return {encounters}
-	}
-
-	/** @override */
-	async _updateObject(event, formData) {
-		const data = expandObject(formData);
-		let encounters = []
-		for (let [key, value] of Object.entries(data)) {
-			if (value.name == "") {
-				ui.notifications.error(game.i18n.localize("RandomEncounter.SaveNameError"));
-				continue;
-			}
-			if (value.scene == "") {
-				ui.notifications.error(game.i18n.localize("RandomEncounter.SaveSceneError"));
-				continue;
-			}
-			if (value.rolltable == "") {
-				ui.notifications.error(game.i18n.localize("RandomEncounter.SaveRollTableError"));
-				continue;
-			}
-			value.time = parseInt(value.time);
-			encounters.push(value);
-		}
-		await game.settings.set("random-encounters", "encounters", encounters);
-		RandomEncounter.registerRandomEncounters();
-	}
-
-	/** @override */
-	activateListeners(html) {
-		super.activateListeners(html);
-		html.find('button.add-encounter').click(this._onAddEncounter.bind(this));
-		html.find('button.remove-encounter').click(this._onRemoveEncounter.bind(this));
-		html.find('button.add-rolltable').click(this._createRollTable.bind(this));
-	}
-
-	async _onAddEncounter(event) {
-		event.preventDefault();
-		let encounters = game.settings.get("random-encounters", "encounters");
-		let updateData = {
-			"name": "",
-			"scene": "",
-			"rooms": "",
-			"time": "",
-			"daynight": "",
-			"chance": "",
-			"onresult": "",
-			"rolltable": "",
-			"timeout_id": ""
-		}
-		encounters.push(updateData);
-		await game.settings.set("random-encounters", "encounters", encounters)
-		this.render();
-	}
-
-	async _onRemoveEncounter(event) {
-		event.preventDefault();
-		const el = $(event.target).closest(".encounter-entry");
-		if (!el) {
-			return true;
-		}
-		
-		let encounters = game.settings.get("random-encounters", "encounters");
-		
-		let rmEncounter = encounters[el.data("idx")]
-		game.Gametime.clearTimeout(rmEncounter.timeout_id)
-		game.Gametime._save();
-		encounters.splice(el.data("idx"), 1);
-		game.settings.set("random-encounters", "encounters", encounters)
-		el.remove();
-		await this._onSubmit(event, { preventClose: true });
-		this.render();
-	}
-	
-	async _createRollTable(event) {
-		event.preventDefault();
-		$(event.target).closest("body").find("#tables button.create-entity").click()
-	}
-	
-	//static do_render() {
-	// rerender the window if it was open and if a new roll table was created 
-	//	console.log("rendering");
-	//	this.render();
-	//}
-}
-
-
 export class RandomEncounter {
 	static printMessage(title, message){
 		let chatData = {
@@ -180,6 +40,7 @@ export class RandomEncounter {
 		
 		//get a list of pc tokens
 		let pcs = game.actors.filter(a => a.hasPlayerOwner)
+		console.debug("random-encounters | checking if actors", pcs, "are in rooms", rooms)
 		for (var r = 0; r < room_arr.length; r++) {
 			let room = scene.data.drawings.find(a => a.data.text == room_arr[r]);
 			if (room) {
@@ -255,6 +116,7 @@ export class RandomEncounter {
 		}
 
 		let active_scene = game.scenes.find(a => a.active).name;
+		console.log(`random-encounters | checking if scene '${active_scene}' has encounters`)
 		let encounters = game.settings.get("random-encounters", "encounters").filter(a => a.scene ==  active_scene);
 		for(var i = 0; i < encounters.length; i++) {
 			RandomEncounter.doRandomEncounter(encounters[i])
@@ -266,8 +128,10 @@ export class RandomEncounter {
 		if (game.combat || !game.users.filter(a => a.id == game.userId)[0].isGM) {
 			return false;
 		}
+		console.log("random-encounters | checking for random encounter")
 
 		let scene = game.scenes.find(a => a.active);
+		let doRollTable = false;
 		if (encounter.scene == scene.name) {
 			//check for daynight options
 			let do_check = false;
@@ -281,11 +145,12 @@ export class RandomEncounter {
 			else if (encounter.daynight == "None") {
 				do_check = true;
 			}
+			console.debug("random-encounters | day/night/none encounter", do_check)
 			if (do_check) {
 				let inroom = await RandomEncounter.checkRooms(scene, encounter.rooms);
+				console.debug("random-encounters | room encounter", inroom)
 				if (inroom) {
 					//do roll check if one is set
-					let doRollTable = false;
 					if(encounter.chance == "") {
 						doRollTable = true;
 					}
@@ -307,38 +172,119 @@ export class RandomEncounter {
 							}
 						}
 					}
-					if(doRollTable) {
-						let tableRoll = await game.tables.find(t => t.name == encounter.rolltable).roll()
-						let tableResult = tableRoll.results[0]
-						let text = tableResult.data.text
-						if (tableResult.data.collection) {
-							text = "@Compendium[" + tableResult.data.collection + "." + tableResult.data.resultId + "]{" + text + "}"
-						}
-						RandomEncounter.printEncounter(encounter.name, text);
-					}
-					else {
-						RandomEncounter.printMessage(encounter.name, "No Random Encounter");
-					}
+					console.debug("random-encounters | die chance encounter", doRollTable)
 				}
 			}
 		}
+		
+		if(doRollTable) {
+			console.log(`random-encounters | random encounter '${encounter.name}' has been triggered`)
+			let tableRoll = await game.tables.find(t => t.name == encounter.rolltable).roll()
+			let tableResult = tableRoll.results[0]
+			let text = tableResult.data.text
+			if (tableResult.data.collection) {
+				text = "@Compendium[" + tableResult.data.collection + "." + tableResult.data.resultId + "]{" + text + "}"
+			}
+			RandomEncounter.printEncounter(encounter.name, text);
+		}
+		else {
+			RandomEncounter.printMessage(encounter.name, "No Random Encounter");
+		}
+	}
+}
+
+export class RandomEncounterSettings extends FormApplication {
+	constructor(object = {}, options) {
+		super(object, options);
 	}
 
-	static checkAboutTime() {
-		return game.modules.get("about-time")?.active;
+	/** @override */
+	static get defaultOptions() {
+		return mergeObject(super.defaultOptions, {
+			classes: ["random-encounters", "settings"],
+			popOut: true,
+			template: "modules/random-encounters/templates/encounters.html",
+			height: 'auto',
+			id: 'random-encounters-application',
+			title: game.i18n.localize("RandomEncounter.button.name"),
+			width: 600,
+			submitOnClose: false,
+		});
 	}
-	
-	static registerRandomEncounters() {
-		if (RandomEncounter.checkAboutTime()) {
+
+	/** @override */
+	getData() {
+		let encounters = game.settings.get("random-encounters", "encounters");
+		for (var i = 0; i < encounters.length; i++) {
+			encounters[i]["scenes"] = [];
+			game.scenes.map(a => a.name).forEach(function(name) {
+				let selected = false;
+				if(name == encounters[i].scene) {
+					selected = true;
+				}
+				encounters[i]["scenes"].push({
+					"name": name,
+					"selected": selected
+				});
+			});
+			encounters[i]["daynight_options"] = [{"name": "None", "selected": false}, {"name": "Day", "selected": false}, {"name": "Night", "selected": false}]
+			for(var j = 0; j < encounters[i]["daynight_options"].length; j++) {
+				if(encounters[i]["daynight_options"][j]["name"] == encounters[i].daynight) {
+					encounters[i]["daynight_options"][j]["selected"] = true;
+				}
+			}
+			
+			encounters[i]["rolltables"] = [];
+			game.tables.map(a => a.name).forEach(function(name) {
+				let selected = false;
+				if (name == encounters[i].rolltable) {
+					selected = true;
+				}
+				encounters[i]["rolltables"].push({
+					"name": name,
+					"selected": selected
+				});
+			});
+		}
+		return {encounters}
+	}
+
+	/** @override */
+	async _updateObject(event, formData) {
+		const data = expandObject(formData);
+		let encounters = []
+		for (let [key, value] of Object.entries(data)) {
+			if (value.name == "") {
+				ui.notifications.error(game.i18n.localize("RandomEncounter.SaveNameError"));
+				continue;
+			}
+			if (value.scene == "") {
+				ui.notifications.error(game.i18n.localize("RandomEncounter.SaveSceneError"));
+				continue;
+			}
+			if (value.rolltable == "") {
+				ui.notifications.error(game.i18n.localize("RandomEncounter.SaveRollTableError"));
+				continue;
+			}
+			value.time = parseInt(value.time);
+			encounters.push(value);
+		}
+		console.debug("random-encounters | saving new encounter")
+		await game.settings.set("random-encounters", "encounters", encounters);
+
+		if (game.modules.get("about-time")?.active) {
 			if(!game.Gametime.isRunning()) {
 				game.Gametime.startRunning();
 			}
 			let encounters = game.settings.get("random-encounters", "encounters")
 			for (var i = 0; i < encounters.length; i++) {
 				if(encounters[i].timeout_id != "") {
+					console.log("random-encounters | unregister encounter with about-time")
 					game.Gametime.clearTimeout(encounters[i].timeout_id)
 				}
+				console.log("random-encounters | register encounter with about-time")
 				let doEncounter = async (encounter) => {
+					console.log("random-encounters | running from about-time")
 					RandomEncounter.doRandomEncounter(encounter);
 				}
 				encounters[i].timeout_id = game.Gametime.doEvery({minutes: encounters[i].time}, doEncounter, encounters[i])
@@ -347,12 +293,71 @@ export class RandomEncounter {
 			game.Gametime._save();
 		}
 	}
+
+	/** @override */
+	activateListeners(html) {
+		super.activateListeners(html);
+		html.find('button.add-encounter').click(this._onAddEncounter.bind(this));
+		html.find('button.remove-encounter').click(this._onRemoveEncounter.bind(this));
+		html.find('button.add-rolltable').click(this._createRollTable.bind(this));
+	}
+
+	async _onAddEncounter(event) {
+		event.preventDefault();
+		let encounters = game.settings.get("random-encounters", "encounters");
+		let updateData = {
+			"name": "",
+			"scene": "",
+			"rooms": "",
+			"time": "",
+			"daynight": "",
+			"chance": "",
+			"onresult": "",
+			"rolltable": "",
+			"timeout_id": ""
+		}
+		encounters.push(updateData);
+		await game.settings.set("random-encounters", "encounters", encounters)
+		this.render();
+	}
+
+	async _onRemoveEncounter(event) {
+		event.preventDefault();
+		const el = $(event.target).closest(".encounter-entry");
+		if (!el) {
+			return true;
+		}
+		
+		let encounters = game.settings.get("random-encounters", "encounters");
+		
+		let rmEncounter = encounters[el.data("idx")]
+		game.Gametime.clearTimeout(rmEncounter.timeout_id)
+		game.Gametime._save();
+		encounters.splice(el.data("idx"), 1);
+		game.settings.set("random-encounters", "encounters", encounters)
+		el.remove();
+		await this._onSubmit(event, { preventClose: true });
+		this.render();
+	}
+	
+	async _createRollTable(event) {
+		event.preventDefault();
+		$(event.target).closest("body").find("#tables button.create-entity").click()
+	}
+	
+	//static do_render() {
+	// rerender the window if it was open and if a new roll table was created 
+	//	console.log("rendering");
+	//	this.render();
+	//}
 }
+
 
 Hooks.on("ready", function () {
 	if (!game.users.filter(a => a.id == game.userId)[0].isGM)
 		return true;
 
+	console.debug("random-encounters | register settings")
 	game.settings.registerMenu("random-encounters", "template", {
 		name: "RandomEncounter.button.name",
 		label: "RandomEncounter.button.label",
@@ -381,6 +386,7 @@ Hooks.on("ready", function () {
 });
 
 Hooks.once("init", function () {
+	console.log("random-encounters | initializing")
 	window.addEventListener("keydown", ev => {
 		//only allow for non repeat keys on the body by the GM
 		if (ev.repeat || document.activeElement.tagName !== "BODY" || !game.users.filter(a => a.id == game.userId)[0].isGM)
@@ -392,6 +398,7 @@ Hooks.once("init", function () {
 			if (KeyBinding.eventIsForBinding(ev, key)) {
 				ev.preventDefault();
 				ev.stopPropagation();
+				console.debug("random-encounters | hotkey pressed")
 				RandomEncounter.doRandomEncounters();
 			}
 		}

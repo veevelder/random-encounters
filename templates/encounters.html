@@ -85,12 +85,14 @@
 						{{/each}}
 					</select>
 				</div>
-				<button class='add-rolltable'>
-					<i class='fas fa-th-list'></i>{{localize 'RandomEncounter.NewRollTable'}}
-				</button>
-			</div>
-			<div class='flexcol remove-encounter-wrapper'>
-				<button class='remove-encounter' data-idx="{{idx}}"><i class='far fa-trash-alt'></i></button>
+				<div class="flexrow">
+					<button class='add-rolltable'>
+						<i class='fas fa-th-list'></i>{{localize 'RandomEncounter.NewRollTable'}}
+					</button>
+					<button class='remove-encounter' data-idx="{{idx}}">
+						<i class='far fa-trash-alt'></i>{{localize 'RandomEncounter.DeleteRandomEncounter'}}
+					</button>
+				</div>
 			</div>
 		</div>
 	{{/each}}

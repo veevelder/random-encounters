@@ -29,6 +29,6 @@
 	"url" : "https://github.com/veevelder/random-encounters",
 	"download" : "https://github.com/veevelder/random-encounters/releases/download/0.1.8/random-encounters.zip",
 	"manifest" : "https://raw.githubusercontent.com/veevelder/random-encounters/main/module.json",
-	"license": "LICENSE",
-	"readme": "README.md"
+	"license": "https://github.com/veevelder/random-encounters/blob/main/LICENSE",
+	"readme": "https://github.com/veevelder/random-encounters/blob/main/README.md"
 }

@@ -356,7 +356,9 @@ export class RandomEncounterSettings extends FormApplication {
 Hooks.on("ready", function () {
 	if (!game.users.filter(a => a.id == game.userId)[0].isGM)
 		return true;
-
+	
+	//check for old settings and migrate
+	//some issues with the new version in that it was not migrating old settings when I fixed the name
 	console.debug("random-encounters | register settings")
 	game.settings.registerMenu("random-encounters", "template", {
 		name: "RandomEncounter.button.name",
@@ -383,6 +385,44 @@ Hooks.on("ready", function () {
 		default: "Shift + R",
 		type: KeyBinding,
 	});
+	
+	console.debug("random-encounters | checking for old settings")
+	var old_settings = []
+	game.settings.settings.forEach(a => {
+		if (a.module == "random-encounter") {
+			old_settings.push(a)
+		}
+	})
+
+	if (old_settings.length != 0) {
+		Dialog.confirm({
+			title: "Random Encounters Settings Migration",
+			content: "<p>Found old Random Encounter settings do you want to keep the old settings?</p><p><strong>Yes</strong> will migrate and delete the old settings</p><p><strong>No</strong> will delete the old settings.</p>",
+			yes: () => {
+				for(var i = 0; i < old_settings.length; i++) {
+					console.log(old_settings[i])
+					game.settings.set("random-encounters", old_settings[i].key, old_settings[i].default);
+				}
+				game.settings.settings.forEach((v, k, m) => {
+					if (v.module == "random-encounter") {
+						console.log(`random-encounters | deleting old setting ${k}`)
+						game.settings.settings.delete(k)
+					}
+				})
+			},
+			no: () => {
+				game.settings.settings.forEach((v, k, m) => {
+					if (v.module == "random-encounter") {
+						console.log(`random-encounters | deleting old setting ${k}`)
+						game.settings.settings.delete(k)
+					}
+				})
+			},
+			defaultYes: true
+			
+		})
+	}
+	
 });
 
 Hooks.once("init", function () {

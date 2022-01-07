@@ -1,4 +1,5 @@
 ![Latest Release Download Count](https://img.shields.io/github/downloads/veevelder/random-encounters/latest/random-encounters.zip) ![Forge Installs](https://img.shields.io/badge/dynamic/json?label=Forge%20Installs&query=package.installs&suffix=%25&url=https%3A%2F%2Fforge-vtt.com%2Fapi%2Fbazaar%2Fpackage%2Frandom-encounters&colorB=4aa94a) ![Foundry Core Compatible Version](https://img.shields.io/badge/dynamic/json.svg?url=https%3A%2F%2Fraw.githubusercontent.com%2Fveevelder%2Frandom-encounters%2Fmaster%2Fmodule.json&label=Foundry%20Version&query=$.compatibleCoreVersion&colorB=orange)
+
 # Random Encounters module for FVTT
 
 Adds the ability to create Random Encounters for Scenes.
@@ -7,27 +8,23 @@ Each random encounter can be run on time intervals and dice chance, and will rol
 
 Will not trigger an encounter if players are already in combat.
 
-
-## Installation Instructions
-
-Copy  into the module installer inside foundry when it asks for the manifest.
-
-OR
-
-Simply create a folder named 'random-encounters' in public/modules and git clone this repository there. Makes it easy to pull updates in the future.
-
-OR
-
-Download the zip, create a folder in Data/modules called 'random-encounters' and extract the contents of "random-encounters-master.zip" there.
-
 ## How To Use
 
-You can find the settings for Random Encounters under General Module Settings (Note: I have no idea why its not under its own name, I am still working on that)
+### FoundryVTT Version 9 Updates
+With the new keybind capabilities built into Foundry Random Encounters now only requires the about-time module as a dependency, and some of the settings have moved/changed as noted below. The same basic functionality still exists.
+
+## Settings
+
+You can find the settings for Random Encounters
 
 ![Settings](images/settings.png)
 
 Click on Configure to add new Random Encounters.
 
+## Keybind Settings
+The keybind setting has now moved to the Configure Controls Setting Menu
+
+![Settings](images/rnd-keybind-setting.png)
 
 You can change the Hot Key to trigger any Random Encounters.
 
@@ -38,7 +35,7 @@ Click on the Add Encounter button.
 
 ![Random Encounter Settings](images/rnd-settings.png)
 
-It will create a new Random Encounter Template.
+It will create a new Random Encounter Template. Which is now collapsible for better viewing.
 
 ![Random Encounter Example](images/empty-rnd.png)
 
@@ -102,7 +99,7 @@ NOTE: if no player characters are within a room and you trigger a random encount
 Defined two room Random Encounter RollTables.
 
 #### Room/Area Drawings
-![Random Encounter Room Setup](images/rnd-rooms-setuppng.png)
+![Random Encounter Room Setup](images/rnd-rooms-setup.png)
 
 Use the drawing tools to create a drawing, Random Encounter can use either the Rectangle, Ellipse, or Polygon drawings to determine the area/room trigger.
 

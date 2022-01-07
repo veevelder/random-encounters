@@ -1,5 +1,3 @@
-import {KeyBinding} from '../settings-extender/settings-extender.js'
-
 export class RandomEncounter {
 	static printMessage(title, message){
 		let chatData = {
@@ -201,14 +199,17 @@ export class RandomEncounterSettings extends FormApplication {
 	/** @override */
 	static get defaultOptions() {
 		return mergeObject(super.defaultOptions, {
-			classes: ["random-encounters", "settings"],
 			popOut: true,
 			template: "modules/random-encounters/templates/encounters.html",
 			height: 'auto',
-			id: 'random-encounters-application',
+			id: 'random-encounters',
 			title: game.i18n.localize("RandomEncounter.button.name"),
-			width: 600,
+			width: 700,
+			popOut: true,
+			minimizable: true,
+            resizable: true,
 			submitOnClose: false,
+			closeOnSubmit: false,
 		});
 	}
 
@@ -253,59 +254,66 @@ export class RandomEncounterSettings extends FormApplication {
 	async _updateObject(event, formData) {
 		const data = expandObject(formData);
 		let encounters = []
+		let errors = false;
 		for (let [key, value] of Object.entries(data)) {
 			if (value.name == "") {
 				ui.notifications.error(game.i18n.localize("RandomEncounter.SaveNameError"));
+				errors = true;
 				continue;
 			}
 			if (value.scene == "") {
 				ui.notifications.error(game.i18n.localize("RandomEncounter.SaveSceneError"));
+				errors = true;
 				continue;
 			}
 			if (value.rolltable == "") {
 				ui.notifications.error(game.i18n.localize("RandomEncounter.SaveRollTableError"));
+				errors = true;
 				continue;
 			}
 			value.time = parseInt(value.time);
 			encounters.push(value);
 		}
-		console.debug("random-encounters | saving new encounter")
-		await game.settings.set("random-encounters", "encounters", encounters);
-
-		if (game.modules.get("about-time")?.active) {
-			if(!game.Gametime.isRunning()) {
-				game.Gametime.startRunning();
-			}
-			let encounters = game.settings.get("random-encounters", "encounters")
-			for (var i = 0; i < encounters.length; i++) {
-				if(encounters[i].timeout_id != "") {
-					console.log("random-encounters | unregister encounter with about-time")
-					game.Gametime.clearTimeout(encounters[i].timeout_id)
+		if (!errors) {
+			console.debug("random-encounters | saving new encounter")
+			await game.settings.set("random-encounters", "encounters", encounters);
+			if (game.modules.get("about-time")?.active) {
+				if(!game.Gametime.isRunning()) {
+					game.Gametime.startRunning();
 				}
-				console.log("random-encounters | register encounter with about-time")
-				let doEncounter = async (encounter) => {
-					console.log("random-encounters | running from about-time")
-					RandomEncounter.doRandomEncounter(encounter);
+				let encounters = game.settings.get("random-encounters", "encounters")
+				for (var i = 0; i < encounters.length; i++) { 
+					if(encounters[i].timeout_id != "") {
+						console.log("random-encounters | unregister encounter with about-time")
+						game.Gametime.clearTimeout(encounters[i].timeout_id)
+					}
+					console.log("random-encounters | register encounter with about-time")
+					let doEncounter = async (encounter) => {
+						console.log("random-encounters | running from about-time")
+						RandomEncounter.doRandomEncounter(encounter);
+					}
+					encounters[i].timeout_id = game.Gametime.doEvery({minutes: encounters[i].time}, doEncounter, encounters[i])
 				}
-				encounters[i].timeout_id = game.Gametime.doEvery({minutes: encounters[i].time}, doEncounter, encounters[i])
+				game.settings.set("random-encounters", "encounters", encounters)
+				game.Gametime._save();
 			}
-			game.settings.set("random-encounters", "encounters", encounters)
-			game.Gametime._save();
+			await this.render()
 		}
 	}
 
 	/** @override */
 	activateListeners(html) {
 		super.activateListeners(html);
-		html.find('button.add-encounter').click(this._onAddEncounter.bind(this));
-		html.find('button.remove-encounter').click(this._onRemoveEncounter.bind(this));
-		html.find('button.add-rolltable').click(this._createRollTable.bind(this));
+		html.find('.add-encounter').click(this._onAddEncounter.bind(this));
+		html.find('.remove-encounter').click(this._onRemoveEncounter.bind(this));
+		html.find('.collapse-button').click(this._expandEncounter.bind(this));
 	}
 
 	async _onAddEncounter(event) {
 		event.preventDefault();
 		let encounters = game.settings.get("random-encounters", "encounters");
 		let updateData = {
+			"hidden": true,
 			"name": "",
 			"scene": "",
 			"rooms": "",
@@ -323,35 +331,65 @@ export class RandomEncounterSettings extends FormApplication {
 
 	async _onRemoveEncounter(event) {
 		event.preventDefault();
-		const el = $(event.target).closest(".encounter-entry");
+		const el = $(event.target);
 		if (!el) {
 			return true;
 		}
 		
 		let encounters = game.settings.get("random-encounters", "encounters");
-		
 		let rmEncounter = encounters[el.data("idx")]
 		game.Gametime.clearTimeout(rmEncounter.timeout_id)
 		game.Gametime._save();
 		encounters.splice(el.data("idx"), 1);
-		game.settings.set("random-encounters", "encounters", encounters)
+		await game.settings.set("random-encounters", "encounters", encounters)
 		el.remove();
-		await this._onSubmit(event, { preventClose: true });
 		this.render();
 	}
-	
-	async _createRollTable(event) {
+
+	async _expandEncounter(event) {
 		event.preventDefault();
-		$(event.target).closest("body").find("#tables button.create-entity").click()
+		const el = $(event.target)
+		if (!el) {
+			console.warn("no element matches button")
+			return true
+		}
+		let encounters = game.settings.get("random-encounters", "encounters");
+		const target = $(el.data("id"))
+		if(el.hasClass("active")) {
+			target.hide()
+			el.removeClass("active fa-minus").addClass("fa-plus")
+			encounters[el.data("idx")].hidden = true
+		}
+		else {
+			target.show()
+			el.removeClass("active fa-plus").addClass("active fa-minus")
+			encounters[el.data("idx")].hidden = false
+		}
+		//save render state
+		await game.settings.set("random-encounters", "encounters", encounters)
+		this.render()
 	}
-	
-	//static do_render() {
-	// rerender the window if it was open and if a new roll table was created 
-	//	console.log("rendering");
-	//	this.render();
-	//}
 }
 
+Hooks.on("init", () => {
+	console.debug("random-encounters | register keybind settings")
+	game.keybindings.register("random-encounters", "key", {
+		name: "QuickCombat.Keybind",
+		hint: "QuickCombat.KeybindHint",
+		editable: [
+			{
+				key: "R",
+				modifiers: ["Alt"]
+			}
+		],
+		onDown: () => {
+			console.debug("random-encounters | hotkey pressed")
+			RandomEncounter.doRandomEncounters();
+		},
+		restricted: true, //gmonly
+		precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL
+	});
+});
 
 Hooks.on("ready", function () {
 	if (!game.users.filter(a => a.id == game.userId)[0].isGM)
@@ -375,15 +413,6 @@ Hooks.on("ready", function () {
 		config: false,
 		default: [],
 		type: Object
-	});
-
-	game.settings.register("random-encounters", "key", {
-		name: "RandomEncounter.Keybind",
-		hint: "RandomEncounter.KeybindHint",
-		scope: "world",
-		config: true,
-		default: "Shift + R",
-		type: KeyBinding,
 	});
 	
 	console.debug("random-encounters | checking for old settings")
@@ -424,29 +453,3 @@ Hooks.on("ready", function () {
 	}
 	
 });
-
-Hooks.once("init", function () {
-	console.log("random-encounters | initializing")
-	window.addEventListener("keydown", ev => {
-		//only allow for non repeat keys on the body by the GM
-		if (ev.repeat || document.activeElement.tagName !== "BODY" || !game.users.filter(a => a.id == game.userId)[0].isGM)
-			return true;
-
-		let setting_key = game.settings.get("random-encounters", "key")
-		if (setting_key != null) {
-			const key = KeyBinding.parse(setting_key)
-			if (KeyBinding.eventIsForBinding(ev, key)) {
-				ev.preventDefault();
-				ev.stopPropagation();
-				console.debug("random-encounters | hotkey pressed")
-				RandomEncounter.doRandomEncounters();
-			}
-		}
-	});
-});
-
-//Hooks.on("createRollTable", function() {
-	//refresh settings window so it can get the new roll table name
-//	RandomEncounterSettings.do_render();
-//});
-

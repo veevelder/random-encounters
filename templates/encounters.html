@@ -1,107 +1,109 @@
 <form class="flexcol" autocomplete='off' onsubmit="event.preventDefault();">
-	<p>
-		{{localize 'RandomEncounter.intro'}}
-	</p>
-
-	{{#each encounters as |encounter idx|}}
-		<div class='flexrow encounter-entry' data-idx="{{idx}}">
-			<div class='flexcol'>
-				<div class='form-group'>
-					<label for="{{idx}}.name">{{localize 'RandomEncounter.name.label'}}</label>
-					<div class='form-fields'>
-						<input type='text' name="{{idx}}.name" value="{{encounter.name}}"/>
-					</div>
-				</div>
-				<div class='form-group'>
-					<label for="{{idx}}.scene">{{localize 'RandomEncounter.scene.label'}}</label>
-					<select name="{{idx}}.scene">
-						<option value=""></option>
-						{{#each encounter.scenes as | scene|}}
-							{{#if scene.selected}}
-								<option value="{{scene.name}}" selected>
+	<header class="flex0"><p>{{localize 'RandomEncounter.intro'}}</p></header>
+	<section class="content">
+		{{#each encounters as |encounter idx|}}
+		<div class="re-border">
+			<div class="flexrow" data-idx="{{idx}}">
+				<div class="flexcol">
+					<div class="form-group">
+						<div class="form-fields">
+							{{#if encounter.hidden }}
+							<i class="fas fa-plus collapse-button" data-id="#encounter-{{idx}}" data-idx="{{idx}}"></i>
 							{{else}}
-								<option value="{{scene.name}}">
+							<i class="fas fa-minus active collapse-button" data-id="#encounter-{{idx}}" data-idx="{{idx}}"></i>
 							{{/if}}
-								{{scene.name}}
-							</option>
-						{{/each}}
-					</select>
-				</div>
-				<div class='form-group'>
-					<label for="{{idx}}.rooms">{{localize 'RandomEncounter.rooms.label'}}</label>
-					<div class='form-fields'>
-						<input type='text' name="{{idx}}.rooms" value="{{encounter.rooms}}"/>
+							<input class="encounter-name" type='text' name="{{idx}}.name" value="{{encounter.name}}" placeholder="{{localize 'RandomEncounter.name.label'}}"/>
+							<i class='far fa-trash-alt remove-encounter' data-idx="{{idx}}"></i>
+						</div>
 					</div>
-					<p class="notes">{{localize 'RandomEncounter.rooms.hint'}}</p>
-				</div>
-				<div class='form-group'>
-					<label for="{{idx}}.time">{{localize 'RandomEncounter.time.label'}}</label>
-					<div class='form-fields'>
-						<input type='text' name="{{idx}}.time" value="{{encounter.time}}"/>
+					{{#if encounter.hidden }}
+					<div id="encounter-{{idx}}" style="display: none;">
+					{{else}}
+					<div id="encounter-{{idx}}">
+					{{/if}}
+						<div class='form-group'>
+							<label for="{{idx}}.scene">{{localize 'RandomEncounter.scene.label'}}</label>
+							<select name="{{idx}}.scene">
+								<option value=""></option>
+								{{#each encounter.scenes as | scene|}}
+									{{#if scene.selected}}
+										<option value="{{scene.name}}" selected>
+									{{else}}
+										<option value="{{scene.name}}">
+									{{/if}}
+										{{scene.name}}
+									</option>
+								{{/each}}
+							</select>
+						</div>
+						<div class='form-group'>
+							<label for="{{idx}}.rooms">{{localize 'RandomEncounter.rooms.label'}}</label>
+							<div class='form-fields'>
+								<input type='text' name="{{idx}}.rooms" value="{{encounter.rooms}}"/>
+							</div>
+							<p class="notes">{{localize 'RandomEncounter.rooms.hint'}}</p>
+						</div>
+						<div class='form-group'>
+							<label for="{{idx}}.time">{{localize 'RandomEncounter.time.label'}}</label>
+							<div class='form-fields'>
+								<input type='text' name="{{idx}}.time" value="{{encounter.time}}"/>
+							</div>
+							<p class="notes">{{localize 'RandomEncounter.time.hint'}}</p>
+						</div>
+						<div class='form-group'>
+							<label for="{{idx}}.daynight">{{localize 'RandomEncounter.daynight.label'}}</label>
+							<select name="{{idx}}.daynight">
+								{{#each encounter.daynight_options as | daynight|}}
+									{{#if daynight.selected}}
+										<option value="{{daynight.name}}" selected>
+									{{else}}
+										<option value="{{daynight.name}}">
+									{{/if}}
+										{{daynight.name}}
+									</option>
+								{{/each}}
+							</select>
+							<p class="notes">{{localize 'RandomEncounter.daynight.hint'}}</p>
+						</div>
+						<div class='form-group'>
+							<label for="{{idx}}.chance">{{localize 'RandomEncounter.chance.label'}}</label>
+							<div class='form-fields'>
+								<input type='text' name="{{idx}}.chance" value="{{encounter.chance}}"/>
+							</div>
+							<p class="notes">{{localize 'RandomEncounter.chance.hint'}}</p>
+						</div>
+						<div class='form-group'>
+							<label for="{{idx}}.onresult">{{localize 'RandomEncounter.onresult.label'}}</label>
+							<div class='form-fields'>
+								<input type='text' name="{{idx}}.onresult" value="{{encounter.onresult}}"/>
+							</div>
+							<p class="notes">{{localize 'RandomEncounter.onresult.hint'}}</p>
+						</div>
+						<div class='form-group'>
+							<label for="{{idx}}.rolltable">{{localize 'RandomEncounter.rolltable.label'}}</label>
+							<select name="{{idx}}.rolltable" data-dtype='String'>
+								<option value=""></option>
+								{{#each encounter.rolltables as | rolltable|}}
+									{{#if rolltable.selected}}
+										<option value="{{rolltable.name}}" selected>
+									{{else}}
+										<option value="{{rolltable.name}}">
+									{{/if}}
+										{{rolltable.name}}
+									</option>
+								{{/each}}
+							</select>
+						</div>
 					</div>
-					<p class="notes">{{localize 'RandomEncounter.time.hint'}}</p>
-				</div>
-				<div class='form-group'>
-					<label for="{{idx}}.daynight">{{localize 'RandomEncounter.daynight.label'}}</label>
-					<select name="{{idx}}.daynight">
-						{{#each encounter.daynight_options as | daynight|}}
-							{{#if daynight.selected}}
-								<option value="{{daynight.name}}" selected>
-							{{else}}
-								<option value="{{daynight.name}}">
-							{{/if}}
-								{{daynight.name}}
-							</option>
-						{{/each}}
-					</select>
-					<p class="notes">{{localize 'RandomEncounter.daynight.hint'}}</p>
-				</div>
-				<div class='form-group'>
-					<label for="{{idx}}.chance">{{localize 'RandomEncounter.chance.label'}}</label>
-					<div class='form-fields'>
-						<input type='text' name="{{idx}}.chance" value="{{encounter.chance}}"/>
-					</div>
-					<p class="notes">{{localize 'RandomEncounter.chance.hint'}}</p>
-				</div>
-				<div class='form-group'>
-					<label for="{{idx}}.onresult">{{localize 'RandomEncounter.onresult.label'}}</label>
-					<div class='form-fields'>
-						<input type='text' name="{{idx}}.onresult" value="{{encounter.onresult}}"/>
-					</div>
-					<p class="notes">{{localize 'RandomEncounter.onresult.hint'}}</p>
-				</div>
-				<div class='form-group'>
-					<label for="{{idx}}.rolltable">{{localize 'RandomEncounter.rolltable.label'}}</label>
-					<select name="{{idx}}.rolltable" data-dtype='String'>
-						<option value=""></option>
-						{{#each encounter.rolltables as | rolltable|}}
-							{{#if rolltable.selected}}
-								<option value="{{rolltable.name}}" selected>
-							{{else}}
-								<option value="{{rolltable.name}}">
-							{{/if}}
-								{{rolltable.name}}
-							</option>
-						{{/each}}
-					</select>
-				</div>
-				<div class="flexrow">
-					<button class='add-rolltable'>
-						<i class='fas fa-th-list'></i>{{localize 'RandomEncounter.NewRollTable'}}
-					</button>
-					<button class='remove-encounter' data-idx="{{idx}}">
-						<i class='far fa-trash-alt'></i>{{localize 'RandomEncounter.DeleteRandomEncounter'}}
-					</button>
 				</div>
 			</div>
 		</div>
-	{{/each}}
-	<footer class='sheet-footer flexrow add-encounter-wrapper'>
-		<button type='submit' name='submit' value='1'>
-			<i class='far fa-save'></i>{{localize 'RandomEncounter.save'}}
-		</button>
-		<button class='add-encounter'>
-			<i class='far fa-plus-square'></i>{{localize 'RandomEncounter.add'}}
-		</button>
+		{{/each}}
+	</section>
+	<footer class='sheet-footer flexrow'>
+		<div class="form-group">
+			<button type='submit' name='submit' value='1'><i class='far fa-save'></i>{{localize 'RandomEncounter.save'}}</button>
+			<button class='add-encounter'><i class='far fa-plus-square'></i>{{localize 'RandomEncounter.add'}}</button>
+		</div>
 	</footer>
 </form>

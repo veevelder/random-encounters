@@ -5,7 +5,7 @@
     margin-bottom: 5px;
 }
 
-form .form-group .form-fields > * {
+#random-encounters form .form-group .form-fields > * {
 	flex:none;
 }
 
@@ -20,6 +20,6 @@ form .form-group .form-fields > * {
 #random-encounters input.encounter-name {
     text-align: center;
     font-weight: bold;
-	flex:1;
+	flex:1 !important;
 	display: block;
 }

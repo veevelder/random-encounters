@@ -1,12 +1,39 @@
 {
 	"name": "random-encounters",
+	"compatibleCoreVersion": "9",
+	"dependencies": [{"name": "about-time"}],
+
+	"id": "random-encounters",
 	"title": "Random Encounters",
 	"description": "Create a random encounter for a scene and trigger them manually or time based",
-	"version": "0.2.3",
-	"author": "veevelder",
-	"minimumCoreVersion": "9",
-  	"compatibleCoreVersion": "9",
-	"esmodules": ["random-encounters.js"],
+	"version": "This is auto replaced",
+	"library": "false",
+	"manifestPlusVersion": "1.2.0",
+	"compatibility": {
+		"minimum": 9,
+		"verified": 9,
+		"maximum": 9
+	},
+	"authors": [
+		{
+			"name": "lostix",
+			"url": "https://github.com/veevelder/random-encounters"
+		}
+	],
+	"relationships": {
+		"systems": [],
+		"requires": [{
+			"id": "about-time",
+			"type": "module",
+			"manifest": "https://gitlab.com/tposney/about-time/raw/master/package/module.json",
+			"compatibility": {
+				"verified": "1.0.6"
+			}
+		}]
+	},
+	"esmodules": ["scripts/random-encounters.js"],
+	"scripts": [],
+	"styles": ["styles/random-encounters.css"],
 	"languages": [
 		{
 			"lang": "en",
@@ -14,11 +41,10 @@
 			"path": "lang/en.json"
 		}
 	],
-	"styles": ["styles/random-encounters.css"],
-	"dependencies": [{"name": "about-time"}],
-	"url" : "https://github.com/veevelder/random-encounters",
-	"download" : "https://github.com/veevelder/random-encounters/releases/download/0.2.3/random-encounters.zip",
-	"manifest" : "https://raw.githubusercontent.com/veevelder/random-encounters/main/module.json",
-	"license": "https://github.com/veevelder/random-encounters/blob/main/LICENSE",
-	"readme": "https://github.com/veevelder/random-encounters/blob/main/README.md"
+	"url": "This is auto replaced",
+	"manifest": "This is auto replaced",
+	"download": "This is auto replaced",
+	"license": "LICENSE",
+	"readme": "README.md"
 }
+  

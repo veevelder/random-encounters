@@ -1,7 +1,6 @@
 {
 	"name": "random-encounters",
 	"compatibleCoreVersion": "9",
-	"dependencies": [{"name": "about-time"}],
 
 	"id": "random-encounters",
 	"title": "Random Encounters",

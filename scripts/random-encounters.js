@@ -107,7 +107,7 @@ export default class RandomEncounter {
 	}
 	
 	static async doRandomEncounters(encounter = null) {
-		//if in combat dont do random encounter if not the gm dont do random encounter
+		//if in combat don't do random encounter if not the gm don't do random encounter
 		if (game.combat || !game.users.filter(a => a.id == game.userId)[0].isGM) {
 			return false;
 		}
@@ -192,7 +192,8 @@ export default class RandomEncounter {
 				let tableRoll = await game.tables.find(t => t.name == encounters[i].rolltable).roll()
 				let tableResult = tableRoll.results[0]
 				let text = tableResult.text
-				if (tableResult.collection) {
+				console.log("message", tableResult.collection, tableResult.resultId, text)
+				if (tableResult.resultId !== undefined) {
 					text = "@Compendium[" + tableResult.collection + "." + tableResult.resultId + "]{" + text + "}"
 				}
 				RandomEncounter.printEncounter(encounters[i].name, text);
@@ -292,28 +293,28 @@ export class RandomEncounterSettings extends FormApplication {
 			encounters.push(value);
 		}
 		if (!errors) {
-			console.debug("random-encounters | saving new encounter")
-			await game.settings.set("random-encounters", "encounters", encounters);
+			console.debug("random-encounters | saving new encounter", encounters)
 			if (game.modules.get("about-time")?.active) {
 				if(!game.Gametime.isRunning()) {
 					game.Gametime.startRunning();
 				}
-				let encounters = game.settings.get("random-encounters", "encounters")
 				for (var i = 0; i < encounters.length; i++) { 
-					if(encounters[i].timeout_id != "") {
+					if(encounters[i].timeout_id !== undefined) {
 						console.log("random-encounters | unregister encounter with about-time")
-						game.Gametime.clearTimeout(encounters[i].timeout_id)
+						await game.Gametime.clearTimeout(encounters[i].timeout_id)
 					}
-					console.log("random-encounters | register encounter with about-time")
-					let doEncounter = async (encounter) => {
-						console.log("random-encounters | running from about-time", encounter)
-						RandomEncounter.doRandomEncounters(encounter);
+					if (encounters[i].time) {
+						console.log("random-encounters | register encounter with about-time")
+						let doEncounter = async (encounter) => {
+							console.log("random-encounters | running from about-time", encounter)
+							RandomEncounter.doRandomEncounters(encounter);
+						}
+						encounters[i].timeout_id = game.Gametime.doEvery({minutes: encounters[i].time}, doEncounter, encounters[i])
 					}
-					encounters[i].timeout_id = game.Gametime.doEvery({minutes: encounters[i].time}, doEncounter, encounters[i])
 				}
-				game.settings.set("random-encounters", "encounters", encounters)
-				game.Gametime._save();
+				//game.Gametime._save();
 			}
+			await game.settings.set("random-encounters", "encounters", encounters);
 			await this.render()
 		}
 	}
@@ -354,8 +355,9 @@ export class RandomEncounterSettings extends FormApplication {
 		}
 		let encounters = game.settings.get("random-encounters", "encounters");
 		let rmEncounter = encounters[el.data("idx")]
-		game.Gametime.clearTimeout(rmEncounter.timeout_id)
-		game.Gametime._save();
+		if (rmEncounter.timeout_id !== undefined) {
+			await game.Gametime.clearTimeout(rmEncounter.timeout_id)
+		}
 		encounters.splice(el.data("idx"), 1);
 		await game.settings.set("random-encounters", "encounters", encounters)
 		el.remove();

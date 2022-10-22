@@ -18,7 +18,7 @@ Will not trigger an encounter if players are already in combat.
 With the new keybind capabilities built into Foundry Random Encounters now only requires the about-time module as a dependency, and some of the settings have moved/changed as noted below. The same basic functionality still exists.
 
 ### About-Time Bugs
-Figured out some bugs with my code and about-time module see [about-time issues](about-time-management.png) for more information on.
+Figured out some bugs with my code and about-time module see [about-time issues](about-time-issues.md) for more information on.
 
 ## Settings
 

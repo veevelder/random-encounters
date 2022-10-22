@@ -46,7 +46,7 @@
 						<div class='form-group'>
 							<label for="{{idx}}.time">{{localize 'RandomEncounter.time.label'}}</label>
 							<div class='form-fields'>
-								<input type='text' name="{{idx}}.time" value="{{encounter.time}}"/>
+								<input type='number' name="{{idx}}.time" value="{{encounter.time}}"/>
 							</div>
 							<p class="notes">{{localize 'RandomEncounter.time.hint'}}</p>
 						</div>
@@ -94,6 +94,7 @@
 								{{/each}}
 							</select>
 						</div>
+						<input style="display:none;" type='number' name="{{idx}}.timeout_id" value="{{encounter.timeout_id}}"/>
 					</div>
 				</div>
 			</div>

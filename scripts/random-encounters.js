@@ -261,62 +261,64 @@ export class RandomEncounterSettings extends FormApplication {
 				});
 			});
 		}
+		console.log(encounters)
 		return {encounters}
 	}
 
+
 	/** @override */
 	async _updateObject(event, formData) {
+		event.preventDefault();
 		const data = expandObject(formData);
 		let encounters = []
-		let errors = false;
+		console.log(typeof formData, formData, typeof data, Object.entries(data))
 		for (let [key, value] of Object.entries(data)) {
 			value.hidden = true
 			if (value.name == "") {
 				ui.notifications.error(game.i18n.localize("RandomEncounter.SaveNameError"));
-				errors = true;
 				value.hidden = false
-				continue;
+				return;
 			}
 			if (value.scene == "") {
 				ui.notifications.error(game.i18n.localize("RandomEncounter.SaveSceneError"));
-				errors = true;
 				value.hidden = false
-				continue;
+				return;
 			}
 			if (value.rolltable == "") {
 				ui.notifications.error(game.i18n.localize("RandomEncounter.SaveRollTableError"));
-				errors = true;
 				value.hidden = false
-				continue;
+				return;
+			}			
+
+			if(value.timeout_id !== undefined || value.timeout_id != 0) {
+				value.timeout_id = parseInt(value.timeout_id);
+				console.log(`random-encounters | unregister encounter ${value.timeout_id} with about-time`)
+				await game.Gametime.clearTimeout(value.timeout_id)
+				//clearEncounters.push(value.timeout_id)
+				value.timeout_id = null
 			}
-			value.time = parseInt(value.time);
+
+			if (value.time != "") {
+				//make sure its a number
+				if (!isNaN(value.time)) {
+					console.log("random-encounters | register encounter with about-time")
+					value.time = parseInt(value.time);
+					let doEncounter = async (encounter) => {
+						console.log("random-encounters | running from about-time", encounter)
+						RandomEncounter.doRandomEncounters(encounter);
+					}
+					value.timeout_id = game.Gametime.doAtEvery({minute: value.time}, doEncounter, value)
+				}
+				else {
+					ui.notifications.error(game.i18n.localize("RandomEncounter.TimeNaNError"));
+					value.hidden = false
+					return;
+				}
+			}
 			encounters.push(value);
 		}
-		if (!errors) {
-			console.debug("random-encounters | saving new encounter", encounters)
-			if (game.modules.get("about-time")?.active) {
-				if(!game.Gametime.isRunning()) {
-					game.Gametime.startRunning();
-				}
-				for (var i = 0; i < encounters.length; i++) { 
-					if(encounters[i].timeout_id !== undefined) {
-						console.log("random-encounters | unregister encounter with about-time")
-						await game.Gametime.clearTimeout(encounters[i].timeout_id)
-					}
-					if (encounters[i].time) {
-						console.log("random-encounters | register encounter with about-time")
-						let doEncounter = async (encounter) => {
-							console.log("random-encounters | running from about-time", encounter)
-							RandomEncounter.doRandomEncounters(encounter);
-						}
-						encounters[i].timeout_id = game.Gametime.doEvery({minutes: encounters[i].time}, doEncounter, encounters[i])
-					}
-				}
-				//game.Gametime._save();
-			}
-			await game.settings.set("random-encounters", "encounters", encounters);
-			await this.render()
-		}
+		await game.settings.set("random-encounters", "encounters", encounters);
+		await this.render()
 	}
 
 	/** @override */
@@ -335,12 +337,12 @@ export class RandomEncounterSettings extends FormApplication {
 			"name": "",
 			"scene": "",
 			"rooms": "",
-			"time": "",
+			"time": null,
 			"daynight": "",
 			"chance": "",
 			"onresult": "",
+			"timeout_id": null,
 			"rolltable": "",
-			"timeout_id": ""
 		}
 		encounters.push(updateData);
 		await game.settings.set("random-encounters", "encounters", encounters)
@@ -355,7 +357,7 @@ export class RandomEncounterSettings extends FormApplication {
 		}
 		let encounters = game.settings.get("random-encounters", "encounters");
 		let rmEncounter = encounters[el.data("idx")]
-		if (rmEncounter.timeout_id !== undefined) {
+		if(rmEncounter.timeout_id !== undefined || rmEncounter.timeout_id != 0) {
 			await game.Gametime.clearTimeout(rmEncounter.timeout_id)
 		}
 		encounters.splice(el.data("idx"), 1);

@@ -189,7 +189,17 @@ export default class RandomEncounter {
 			}
 			if(doRollTable) {
 				console.log(`random-encounters | random encounter '${encounters[i].name}' has been triggered`)
-				let tableRoll = await game.tables.find(t => t.name == encounters[i].rolltable).roll()
+				//check for compendium roll table
+				var tableRoll = null;
+				if (encounters[i].compendium != null) {
+					let pack = await game.packs.get(encounters[i].compendium).getIndex()
+					let tableData = await pack.getName(encounters[i].rolltable.split(" - ")[1])
+					var tmp_table = await new RollTable(tableData)
+					tableRoll = await tmp_table.roll()
+				}
+				else {
+					tableRoll = await game.tables.find(t => t.name == encounters[i].rolltable).roll()
+				}
 				let tableResult = tableRoll.results[0]
 				let text = tableResult.text
 				console.log("message", tableResult.collection, tableResult.resultId, text)
@@ -202,6 +212,62 @@ export default class RandomEncounter {
 				RandomEncounter.printMessage(encounters[i].name, "No Random Encounter");
 			}
 		}
+	}
+}
+
+export class RandomEncounterCompendiumSettings extends FormApplication {
+	constructor(object = {}, options) {
+		super(object, options);
+	}
+
+	/** @override */
+	static get defaultOptions() {
+		return mergeObject(super.defaultOptions, {
+			popOut: true,
+			template: "modules/random-encounters/templates/compendiums.html",
+			height: 'auto',
+			id: 'random-encounters-compendiums',
+			title: game.i18n.localize("RandomEncounter.compendium.name"),
+			width: 700,
+			popOut: true,
+			minimizable: true,
+            resizable: true,
+			submitOnClose: true,
+			closeOnSubmit: true,
+		});
+	}
+
+	/** @override */
+	async getData() {
+		//get saved data
+		let saved_compendiums = game.settings.get("random-encounters", "compendiums")
+		let compendiums = []
+		let sub = []
+		let packs = game.packs.filter(a => a.metadata.type == "RollTable")	
+		for (var i = 0; i < packs.length; i++) {
+			sub.push({id:packs[i].metadata.id.replace(".", "_"), label:packs[i].metadata.label, checked: saved_compendiums.includes(packs[i].metadata.id)})
+			if ((i + 1) % 3 == 0) {
+				compendiums.push(sub)
+				sub = []
+			}
+		}
+		if (sub.length != 0) {
+			compendiums.push(sub)
+		}
+		return {compendiums}
+	}
+
+	/** @override */
+	async _updateObject(event, formData) {
+		const data = expandObject(formData);
+		let compendiums = []
+		for (let [key, value] of Object.entries(data)) {
+			if (value) {
+				compendiums.push(key.replace("_", "."))
+			}
+		}
+		await game.settings.set("random-encounters", "compendiums", compendiums);
+		await this.render()
 	}
 }
 
@@ -228,7 +294,7 @@ export class RandomEncounterSettings extends FormApplication {
 	}
 
 	/** @override */
-	getData() {
+	async getData() {
 		let encounters = game.settings.get("random-encounters", "encounters");
 		for (var i = 0; i < encounters.length; i++) {
 			encounters[i]["scenes"] = [];
@@ -250,28 +316,45 @@ export class RandomEncounterSettings extends FormApplication {
 			}
 			
 			encounters[i]["rolltables"] = [];
+			//get game tables
 			game.tables.map(a => a.name).forEach(function(name) {
-				let selected = false;
-				if (name == encounters[i].rolltable) {
-					selected = true;
-				}
 				encounters[i]["rolltables"].push({
 					"name": name,
-					"selected": selected
+					"selected": name == encounters[i].rolltable,
+					"compendium": null
 				});
 			});
+
+			//get compendium tables if any are set
+			let select_compendiums = game.settings.get("random-encounters", "compendiums")
+			if (select_compendiums != null || select_compendiums != []) {
+				//get selected rolltable packs
+				let packs = game.packs.filter(a => a.metadata.type == "RollTable").filter(b => select_compendiums.includes(b.metadata.id))
+				console.log(packs)
+				for (var i = 0; i < packs.length; i++) {
+					//load the pack data
+					await packs[i].getIndex()
+					//loop over the pack entries i.e. roll tables
+					for(var [pack_key, value] of packs[i].index.entries()) {
+						//get the table info and add it to the list
+						let table = await packs[i].getDocument(value._id)
+						let name = packs[i].metadata.label + " - " + table.name
+						encounters[i]["rolltables"].push({
+							"name": name,
+							"selected": name == encounters[i].rolltable,
+							"compendium": packs[i].metadata.id
+						});
+					}
+				}
+			}
 		}
-		console.log(encounters)
 		return {encounters}
 	}
 
-
 	/** @override */
 	async _updateObject(event, formData) {
-		event.preventDefault();
 		const data = expandObject(formData);
 		let encounters = []
-		console.log(typeof formData, formData, typeof data, Object.entries(data))
 		for (let [key, value] of Object.entries(data)) {
 			value.hidden = true
 			if (value.name == "") {
@@ -288,17 +371,20 @@ export class RandomEncounterSettings extends FormApplication {
 				ui.notifications.error(game.i18n.localize("RandomEncounter.SaveRollTableError"));
 				value.hidden = false
 				return;
-			}			
-
-			if(value.timeout_id !== undefined || value.timeout_id != 0) {
+			}
+			//lookup compendium id and make sure its saved
+			var t_arr = value.rolltable.split(",")
+			value.rolltable = t_arr[0]
+			if (t_arr[1] != "") {
+				value.compendium = t_arr[1]
+			}
+			if(value.timeout_id != null && (value.timeout_id !== undefined || value.timeout_id != 0)) {
 				value.timeout_id = parseInt(value.timeout_id);
 				console.log(`random-encounters | unregister encounter ${value.timeout_id} with about-time`)
 				await game.Gametime.clearTimeout(value.timeout_id)
-				//clearEncounters.push(value.timeout_id)
 				value.timeout_id = null
 			}
-
-			if (value.time != "") {
+			if (value.time != "" && value.time != null) {
 				//make sure its a number
 				if (!isNaN(value.time)) {
 					console.log("random-encounters | register encounter with about-time")
@@ -343,6 +429,7 @@ export class RandomEncounterSettings extends FormApplication {
 			"onresult": "",
 			"timeout_id": null,
 			"rolltable": "",
+			"compendium": null
 		}
 		encounters.push(updateData);
 		await game.settings.set("random-encounters", "encounters", encounters)
@@ -424,6 +511,13 @@ Hooks.on("ready", function () {
 		type: RandomEncounterSettings,
 		restricted: true
 	});
+	game.settings.registerMenu("random-encounters", "compendium-template", {
+		name: "RandomEncounter.compendium.name",
+		label: "RandomEncounter.compendium.label",
+		hint: "RandomEncounter.compendium.hint",
+		type: RandomEncounterCompendiumSettings,
+		restricted: true
+	});
 	game.settings.register("random-encounters", "encounters", {
 		name: "",
 		hint: "",
@@ -432,6 +526,15 @@ Hooks.on("ready", function () {
 		default: [],
 		type: Object
 	});
+	game.settings.register("random-encounters", "compendiums", {
+		name: "",
+		hint: "",
+		scope: "world",
+		config: false,
+		default: ["None"],
+		type: Object
+	});
+
 	console.debug("random-encounters | checking for old settings")
 	var old_settings = []
 	game.settings.settings.forEach(a => {

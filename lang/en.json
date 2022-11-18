@@ -23,5 +23,9 @@
 	"RandomEncounter.SaveNameError": "You must provide an Encounter Name",
 	"RandomEncounter.SaveSceneError": "You must provide a Scene",
 	"RandomEncounter.SaveRollTableError": "You must provide a RollTable",
-	"RandomEncounter.DeleteRandomEncounter": "Delete Encounter"
+	"RandomEncounter.DeleteRandomEncounter": "Delete Encounter",
+	"RandomEncounter.compendium.name": "Configure",
+	"RandomEncounter.compendium.label": "Include Tables from Compendiums?",
+	"RandomEncounter.compendium.hint": "OPTIONAL: Select from a list of Compendium RollTables to include when creating a new random encounter",
+	"RandomEncounter.compendium.intro": "Select what RollTable Compendiums to include when creating a new Random Encounter"
 }

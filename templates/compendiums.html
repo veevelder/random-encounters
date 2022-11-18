@@ -1,0 +1,28 @@
+<form class="flexcol" autocomplete='off' onsubmit="event.preventDefault();">
+	<header class="flex0"><p>{{localize 'RandomEncounter.compendium.intro'}}</p></header>
+	<section class="content">
+		<div class="re-border">
+			{{#each compendiums}}
+			<div class="flexrow">
+				{{#each this}}
+					<div class="flexcol">
+						<div class="form-group">
+							{{#if this.checked }}
+							<input type='checkbox' id="{{this.id}}" name="{{this.id}}" checked>
+							{{else}}
+							<input type='checkbox' id="{{this.id}}" name="{{this.id}}">
+							{{/if}}
+							<label for="{{this.id}}">{{this.label}}</label>
+						</div>
+					</div>
+				{{/each}}
+			</div>
+			{{/each}}
+		</div>
+	</section>
+	<footer class='sheet-footer flexrow'>
+		<div class="form-group">
+			<button type='submit' name='submit'><i class='far fa-save'></i>{{localize 'RandomEncounter.save'}}</button>
+		</div>
+	</footer>
+</form>

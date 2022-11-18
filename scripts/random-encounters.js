@@ -324,25 +324,25 @@ export class RandomEncounterSettings extends FormApplication {
 					"compendium": null
 				});
 			});
+			console.log(encounters[i]["rolltables"])
 
 			//get compendium tables if any are set
 			let select_compendiums = game.settings.get("random-encounters", "compendiums")
 			if (select_compendiums != null || select_compendiums != []) {
 				//get selected rolltable packs
 				let packs = game.packs.filter(a => a.metadata.type == "RollTable").filter(b => select_compendiums.includes(b.metadata.id))
-				console.log(packs)
-				for (var i = 0; i < packs.length; i++) {
+				for (var j = 0; j < packs.length; j++) {
 					//load the pack data
-					await packs[i].getIndex()
+					await packs[j].getIndex()
 					//loop over the pack entries i.e. roll tables
-					for(var [pack_key, value] of packs[i].index.entries()) {
+					for(var [pack_key, value] of packs[j].index.entries()) {
 						//get the table info and add it to the list
-						let table = await packs[i].getDocument(value._id)
-						let name = packs[i].metadata.label + " - " + table.name
+						let table = await packs[j].getDocument(value._id)
+						let name = packs[j].metadata.label + " - " + table.name
 						encounters[i]["rolltables"].push({
 							"name": name,
 							"selected": name == encounters[i].rolltable,
-							"compendium": packs[i].metadata.id
+							"compendium": packs[j].metadata.id
 						});
 					}
 				}

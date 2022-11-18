@@ -8,9 +8,11 @@
 
 Adds the ability to create Random Encounters for Scenes.
 
-Each random encounter can be run on time intervals and dice chance, and will roll from a Rollable Table.
+Each random encounter can be run on time intervals and dice chance, and will roll from a RollTable.
 
 Will not trigger an encounter if players are already in combat.
+
+*NEW FEATURE* You can now roll from Compendiums! See below to configure.
 
 ## How To Use
 
@@ -65,6 +67,17 @@ See https://foundryvtt.com/article/roll-tables/ for more examples on how RollTab
 Settings to note:
 * Make sure to uncheck Display Roll to Chat? This will be taken care of by the random encounter code.
 * Make sure to check Draw with Replacement? This will make sure to roll all options and not disable once one has been rolled.
+
+### Rolling from Compendiums
+You can now roll directly from compendiums without having to import them into your world.
+
+First you must select which RollTable Compendiums should be included, click on the `Include Tables from Compendiums` button.
+
+![Random Encounter Configure Compendiums](images/compendium_select.png)
+
+Select which RollTable Compendiums to include, and you should now see additional RollTable options when creating a random encounter.
+
+![Random Encounter Compendium Tables](images/compendium_tables.png)
 
 ## Examples
 

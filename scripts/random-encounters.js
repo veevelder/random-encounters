@@ -393,7 +393,7 @@ export class RandomEncounterSettings extends FormApplication {
 						console.log("random-encounters | running from about-time", encounter)
 						RandomEncounter.doRandomEncounters(encounter);
 					}
-					value.timeout_id = game.Gametime.doAtEvery({minute: value.time}, doEncounter, value)
+					value.timeout_id = game.Gametime.doEvery({minute: value.time}, doEncounter, value)
 				}
 				else {
 					ui.notifications.error(game.i18n.localize("RandomEncounter.TimeNaNError"));

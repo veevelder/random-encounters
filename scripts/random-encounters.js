@@ -575,6 +575,6 @@ Hooks.once("setup", function() {
 	var operations = {
 		doRandomEncounters: RandomEncounter.doRandomEncounters,
 	}
-	game.RandomEncounters = operations;
-	window.RandomEncounters = operations;
+	game.RandomEncounter = operations;
+	window.RandomEncounter = operations;
 })

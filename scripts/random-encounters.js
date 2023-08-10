@@ -22,7 +22,7 @@ export default class RandomEncounter {
 		}
 		RandomEncounter.printMessage(title, message);
 	}
-	
+
 	static checkRooms(tokens, scene, rooms) {
 		//math taken from https://github.com/grandseiken/foundryvtt-multilevel-tokens/blob/master/multilevel.js
 		console.debug("random-encounters | checking if tokens", tokens, "are in rooms", rooms)
@@ -46,58 +46,90 @@ export default class RandomEncounter {
 					}
 					//check for image rotation and fix token points to match
 					if (room.rotation) {
-						//get drawing center
-						const r = -room.rotation * Math.PI / 180;
-						const center = {
-							x: room.x + room.shape.width / 2, 
-							y: room.y + room.shape.height / 2
-						}
+						const center = {x: room.x + room.shape.width / 2, y: room.y + room.shape.height / 2}
+						const r = (-room.rotation) * Math.PI / 180;
 						point = {
 							x: center.x + (point.x - center.x) * Math.cos(r) - (point.y - center.y) * Math.sin(r),
-							y: center.y + (point.x - center.x) * Math.sin(r) + (point.y - center.y) * Math.cos(r)
+							y: center.y + (point.x - center.x) * Math.sin(r) - (point.y - center.y) * Math.cos(r),
 						}
 					}
-					const shape = room.shape
 					//check if token is within the drawing box
-					const inBox = point.x >= room.x && point.x <= room.x + room.shape.width && point.y >= room.y && point.y <= room.y + room.shape.height;
-					if (!inBox) {
-						return false
+					var box = {
+						x: room.x,
+						y: room.y,
+						width: room.shape.width,
+						height: room.shape.height
+					}
+					if(room.shape.type === CONST.DRAWING_TYPES.POLYGON) {
+						let xMin = Number.MAX_VALUE
+						let xMax = Number.MIN_VALUE
+						let yMin = Number.MAX_VALUE
+						let yMax = Number.MIN_VALUE
+						const r = [];
+						if (room.shape.points.length && room.shape.points[0].x !== undefined) {
+							r = room.shape.points
+						}
+						for (var i = 0; i < room.shape.points.length; i += 2) {
+							r.push([room.shape.points[i], room.shape.points[i + 1]])
+						}
+						r.forEach(p => {
+							const x = p[0] + room.x
+							const y = p[1] + room.y
+							xMin = Math.min(xMin, x)
+							xMax = Math.max(xMax, x)
+							yMin = Math.min(yMin, y)
+							yMax = Math.max(yMax, y)
+						})
+						box = {
+							x: xMin,
+							y: yMin,
+							width: xMax - xMin,
+							height: yMax - yMin
+						}
+					}
+					if (!(point.x >= box.x && point.x <= box.x + box.width && point.y >= box.y && point.y <= box.y + box.height)) {
+						continue;
 					}
 					//if its a rectangle then we good
-					if (shape.type === CONST.DRAWING_TYPES.RECTANGLE) {
+					if (room.shape.type === CONST.DRAWING_TYPES.RECTANGLE) {
 						return true;
 					}
 					//make sure token is within the ellipse
-					if (shape.type === CONST.DRAWING_TYPES.ELLIPSE) {
-						if (!shape.width || !shape.height) {
-							return false
+					if (room.shape.type === CONST.DRAWING_TYPES.ELLIPSE) {
+						if (!room.shape.width || !room.shape.height) {
+							continue;
 						}
-						const dx = room.x + shape.width / 2 - point.x;
-						const dy = room.y + shape.height / 2 - point.y;
-						let in_ellipse = 4 * (dx * dx) / (shape.width * shape.width) + 4 * (dy * dy) / (shape.height * shape.height) <= 1;
+						const dx = room.x + room.shape.width / 2 - point.x;
+						const dy = room.y + room.shape.height / 2 - point.y;
+						let in_ellipse = 4 * (dx * dx) / (room.shape.width * room.shape.width) + 4 * (dy * dy) / (room.shape.height * room.shape.height) <= 1;
 						if (in_ellipse) {
 							return true;
 						}
 					}
 					//check if token is within any of the points
-					if (shape.type === CONST.DRAWING_TYPES.POLYGON) {
-						const x = point.x - room.x;
-						const y = point.y - room.y;
-						let vs = []
-						for (let i = 0; i < shape.points.length; i += 2) {
-							vs.push([shape.points[i],shape.points[i+1]])							
+					if (room.shape.type === CONST.DRAWING_TYPES.POLYGON) {
+						const points = [];
+						if (room.room.shape.points.length && room.room.shape.points[0].x !== undefined) {
+							points = room.room.shape.points
 						}
-						var inside = false;
-						for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-							var xi = vs[i][0]
-							var yi = vs[i][1]
-							var xj = vs[j][0]
-							var yj = vs[j][1]
-							var intersects = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
-							if (intersects)
-								inside = !inside
+						for (var i = 0; i < room.room.shape.points.length; i += 2) {
+							points.push([room.room.shape.points[i], room.room.shape.points[i + 1]])
 						}
-						return inside
+						const cx = point.x - room.x;
+						const cy = point.y - room.y;
+						let w = 0
+						for (let i0 = 0; i0 < points.length; ++i0) {
+							let i1 = i0 + 1 === points.length ? 0 : i0 + 1;
+							if (points[i0][1] <= cy && points[i1][1] > cy && (points[i1][0] - points[i0][0]) * (cy - points[i0][1]) - (points[i1][1] - points[i0][1]) * (cx - points[i0][0]) > 0) {
+							  ++w;
+							}
+							if (points[i0][1] > cy && points[i1][1] <= cy && (points[i1][0] - points[i0][0]) * (cy - points[i0][1]) - (points[i1][1] - points[i0][1]) * (cx - points[i0][0]) < 0) {
+							  --w;
+							}
+						}
+						if(w !== 0) {
+							return true
+						}
 					}
 				}
 			}
@@ -201,12 +233,17 @@ export default class RandomEncounter {
 					tableRoll = await game.tables.find(t => t.name == encounters[i].rolltable).roll()
 				}
 				let tableResult = tableRoll.results[0]
-				let text = tableResult.text
-				console.log("message", tableResult.collection, tableResult.resultId, text)
-				if (tableResult.resultId !== undefined) {
-					text = "@Compendium[" + tableResult.collection + "." + tableResult.resultId + "]{" + text + "}"
+				if (tableResult === undefined) {
+					ui.notifications.error(game.i18n.localize("RandomEncounter.BadRollTableError"));
 				}
-				RandomEncounter.printEncounter(encounters[i].name, text);
+				else {
+					let text = tableResult.text
+					console.log("message", tableResult.collection, tableResult.resultId, text)
+					if (tableResult.resultId !== undefined) {
+						text = "@Compendium[" + tableResult.collection + "." + tableResult.resultId + "]{" + text + "}"
+					}
+					RandomEncounter.printEncounter(encounters[i].name, text);
+				}
 			}
 			else {
 				RandomEncounter.printMessage(encounters[i].name, "No Random Encounter");
@@ -324,7 +361,6 @@ export class RandomEncounterSettings extends FormApplication {
 					"compendium": null
 				});
 			});
-			console.log(encounters[i]["rolltables"])
 
 			//get compendium tables if any are set
 			let select_compendiums = game.settings.get("random-encounters", "compendiums")
@@ -355,6 +391,7 @@ export class RandomEncounterSettings extends FormApplication {
 	async _updateObject(event, formData) {
 		const data = expandObject(formData);
 		let encounters = []
+
 		for (let [key, value] of Object.entries(data)) {
 			value.hidden = true
 			if (value.name == "") {
@@ -446,6 +483,7 @@ export class RandomEncounterSettings extends FormApplication {
 		let rmEncounter = encounters[el.data("idx")]
 		if(rmEncounter.timeout_id !== undefined || rmEncounter.timeout_id != 0) {
 			await game.Gametime.clearTimeout(rmEncounter.timeout_id)
+			await window.GameTime.clearTimeout(rmEncounter.timeout_id)
 		}
 		encounters.splice(el.data("idx"), 1);
 		await game.settings.set("random-encounters", "encounters", encounters)
@@ -498,7 +536,8 @@ Hooks.on("init", () => {
 	});
 });
 
-Hooks.on("ready", function () {
+
+Hooks.once("ready", async function () {
 	if (!game.users.filter(a => a.id == game.userId)[0].isGM)
 		return true;
 	//check for old settings and migrate
@@ -567,6 +606,51 @@ Hooks.on("ready", function () {
 			},
 			defaultYes: true	
 		})
+	}
+
+	//find old random encounters that don't match whats saved then force a load again
+	var about_time_queue = game.settings.get("about-time", "store")
+	var encounters = game.settings.get("random-encounters", "encounters")
+	var valid_ids = encounters.filter(a => a.timeout_id != null).map(a => a.timeout_id)
+	if (Object.keys(about_time_queue).length !== 0) {
+		console.debug(`random-encounters | valid ids ${valid_ids}`, about_time_queue["_eventQueue"]["array"])
+		var seen_ids = []
+		if (valid_ids.length > 0 && about_time_queue["_eventQueue"]["array"].length > 0) {
+			console.log("random-encounters | looking for old random encounters")
+			var index_to_remove = []
+			for (var i = 0; i < about_time_queue["_eventQueue"]["array"].length; i++) {
+				//if the uid is not in the list of valid ids and the val has doRandomEncounter
+				if (!valid_ids.includes(about_time_queue["_eventQueue"]["array"][i]["uid"]) && about_time_queue["_eventQueue"]["array"][i]["handler"]["val"].includes("doRandomEncounters")) {
+					index_to_remove.push(i)
+				}
+				//make a list of ids that have been registered
+				else if (valid_ids.includes(about_time_queue["_eventQueue"]["array"][i]["uid"])) {
+					seen_ids.push(about_time_queue["_eventQueue"]["array"][i]["uid"])
+				}
+			}
+			//remove any bad index's
+			for (var i = 0; i < index_to_remove.length; i++) {
+				console.debug(`random-encounters | removing old random encounter ${index_to_remove[i]}`)
+				about_time_queue["_eventQueue"]["array"].splice(index_to_remove[i], 1)
+			}
+		}
+	}
+	//for any encounter that is not registered that should be add them
+	var update = false;
+	for (var i = 0; i < encounters.length; i++) {
+		//if the encounter id is not in the list of saved one readd it
+		if (encounters[i].time != null && !seen_ids.includes(encounters[i].timeout_id)) {
+			update = true
+			break
+		}
+		//if the encounter has a time but no timeout_id then make sure the user re saves
+		else if(encounters[i].time != null && encounters[i].timeout_id === undefined) {
+			update = true
+			break
+		}
+	}
+	if (update) {
+		ui.notifications.warn("Random Encounters | You will need to re-save your encounters, something went wrong with about-time and saving.")
 	}
 });
 

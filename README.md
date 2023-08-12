@@ -4,4 +4,12 @@
 ![Supported Foundry Versions](https://img.shields.io/endpoint?url=https://foundryshields.com/version?url=https://github.com/veevelder/random-encounters/releases/latest/download/module.json)
 [![License](https://img.shields.io/github/license/veevelder/random-encounters?label=License)](LICENSE)
 
+Adds the ability to create Random Encounters for Scenes.
+
+Each random encounter can be run on time intervals and dice chance, and will roll from a RollTable.
+
+Will not trigger an encounter if players are already in combat.
+
+*NEW FEATURE* You can now roll from Compendiums! See below to configure.
+
 How to and settings can be found in the [Wiki](https://github.com/veevelder/random-encounters/wiki)

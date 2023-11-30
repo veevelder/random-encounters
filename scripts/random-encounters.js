@@ -483,7 +483,7 @@ export class RandomEncounterSettings extends FormApplication {
 		let rmEncounter = encounters[el.data("idx")]
 		if(rmEncounter.timeout_id !== undefined || rmEncounter.timeout_id != 0) {
 			await game.Gametime.clearTimeout(rmEncounter.timeout_id)
-			await window.GameTime.clearTimeout(rmEncounter.timeout_id)
+			await window.Gametime.clearTimeout(rmEncounter.timeout_id)
 		}
 		encounters.splice(el.data("idx"), 1);
 		await game.settings.set("random-encounters", "encounters", encounters)

@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # get part of the tag after the `v`
       - name: Extract tag version number
@@ -44,10 +44,10 @@ jobs:
           tag: ${{ github.event.release.tag_name }}
           body: ${{ github.event.release.body }}
 
-      - name: publish module to foundry
+      - name: Publish Module to FoundryVTT
         env:
           API_KEY: ${{secrets.FOUNDRY_API_KEY}}
-          POST_DATA: '{"dry-run":true,"release":{"version":"${{github.event.release.tag_name}}","manifest":"https://github.com/${{github.repository}}/releases/latest/download/module.json","compatibility":{"mimimum":"11","verified":"11","maximum":""}}}'
+          POST_DATA: '{"dry-run":true,"id":"random-encounters","release":{"version":"${{github.event.release.tag_name}}","manifest":"https://github.com/${{github.repository}}/releases/latest/download/module.json","compatibility":{"mimimum":"11","verified":"11","maximum":""}}}'
 
       # Publish Package
         run: |

@@ -45,9 +45,5 @@ jobs:
           body: ${{ github.event.release.body }}
 
       - name: Publish Module to FoundryVTT
-        env:
-          POST_DATA: '{"dry-run":true,"id":"random-encounters","release":{"version":"${{github.event.release.tag_name}}","manifest":"https://github.com/${{github.repository}}/releases/latest/download/module.json","compatibility":{"mimimum":"11","verified":"11","maximum":""}}}'
-
-      # Publish Package
         run: |
-          curl -X POST -H  'Content-Type: application/json' -H 'Authorization: ${{secrets.FOUNDRY_API_KEY}}' --data $POST_DATA https://api.foundryvtt.com/_api/packages/release_version
+          curl -X POST -H  'Content-Type: application/json' -H 'Authorization: ${{secrets.FOUNDRY_API_KEY}}' --data '{"dry-run":true,"id":"random-encounters","release":{"version":"${{github.event.release.tag_name}}","manifest":"https://github.com/${{github.repository}}/releases/latest/download/module.json","compatibility":{"minimum":"11","verified":"11","maximum":""}}}' https://api.foundryvtt.com/_api/packages/release_version

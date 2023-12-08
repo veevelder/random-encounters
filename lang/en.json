@@ -27,5 +27,8 @@
 	"RandomEncounter.compendium.name": "Configure",
 	"RandomEncounter.compendium.label": "Include Tables from Compendiums?",
 	"RandomEncounter.compendium.hint": "OPTIONAL: Select from a list of Compendium RollTables to include when creating a new random encounter",
-	"RandomEncounter.compendium.intro": "Select what RollTable Compendiums to include when creating a new Random Encounter"
+	"RandomEncounter.compendium.intro": "Select what RollTable Compendiums to include when creating a new Random Encounter",
+	"RandomEncounter.brt": "Use Better Roletables",
+	"RandomEncounter.brthint": "Roll random encounter tables with the Better Roletables API",
+	"RandomEncounter.BadRollTableError": "Rolltable did not return any data."
 }

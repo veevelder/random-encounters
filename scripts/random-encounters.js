@@ -13,10 +13,6 @@ export default class RandomEncounter {
 		if (result == "None"){
 			message = "No random encounter";
 		} else {
-			//pause game if not already paused
-			if(!game.paused) {
-				game.togglePause(true, true)
-			}
 			//play random encounter sound effect
 			message += result;
 		}
@@ -222,27 +218,47 @@ export default class RandomEncounter {
 			if(doRollTable) {
 				console.log(`random-encounters | random encounter '${encounters[i].name}' has been triggered`)
 				//check for compendium roll table
-				var tableRoll = null;
+				var table = null;
 				if (encounters[i].compendium != null) {
 					let pack = await game.packs.get(encounters[i].compendium).getIndex()
 					let tableData = await pack.getName(encounters[i].rolltable.split(" - ")[1])
-					var tmp_table = await new RollTable(tableData)
-					tableRoll = await tmp_table.roll()
+					table = await new RollTable(tableData)
 				}
 				else {
-					tableRoll = await game.tables.find(t => t.name == encounters[i].rolltable).roll()
+					table = game.tables.getName(encounters[i].rolltable)
 				}
-				let tableResult = tableRoll.results[0]
-				if (tableResult === undefined) {
-					ui.notifications.error(game.i18n.localize("RandomEncounter.BadRollTableError"));
+				//check if using Better Rolltables
+				if(game.settings.get("random-encounters", "brt")) {
+					//Using Better Rolltables doesn't let me get roll results if display chat is disabled
+					//it will always create its own chat message which is fine for now
+					//https://github.com/p4535992/foundryvtt-better-rolltables/blob/master/src/scripts/better-tables.js#L85
+					//though it is probably a good thing let them handle to chat display and everything since its their roll table
+					await game.modules.get("better-rolltables").api.betterTableRoll(table, {rollMode: "gmroll"})
 				}
 				else {
-					let text = tableResult.text
-					console.log("message", tableResult.collection, tableResult.resultId, text)
-					if (tableResult.resultId !== undefined) {
-						text = "@Compendium[" + tableResult.collection + "." + tableResult.resultId + "]{" + text + "}"
+					var tableRoll = await table.roll()
+					var tableResult = tableRoll.results[0]
+					if (tableResult === null) {
+						ui.notifications.error(game.i18n.localize("RandomEncounter.BadRollTableError"));
 					}
-					RandomEncounter.printEncounter(encounters[i].name, text);
+					else {
+						let text = tableResult.text
+						//display results depending on the type
+						if (tableResult.type == CONST.TABLE_RESULT_TYPES.TEXT) {
+							text = `<table><tr><td>${text}</td></tr></table>`
+						}
+						else if (tableResult.type == CONST.TABLE_RESULT_TYPES.DOCUMENT) {
+							text = `<table><tr><td><img src="${tableResult.img}" width="30" height="30"></td><td>@UUID[${tableResult.documentCollection}.${tableResult.documentId}]{${text}}</td></tr></table>` 
+						}
+						else if (tableResult.type == CONST.TABLE_RESULT_TYPES.COMPENDIUM) {
+							text = `<table><tr><td><img src="${tableResult.img}" width="30" height="30"></td><td>@Compendium[${tableResult.documentCollection}.${tableResult.documentId}]{${text}}</td></tr></table>` 
+						}
+						RandomEncounter.printEncounter(encounters[i].name, text);
+					}
+				}
+				//pause game if not already paused
+				if(!game.paused) {
+					game.togglePause(true, true)
 				}
 			}
 			else {
@@ -573,6 +589,16 @@ Hooks.once("ready", async function () {
 		default: ["None"],
 		type: Object
 	});
+
+	//better roll tables intergation
+	game.settings.register("random-encounters", "brt", {
+		name: "RandomEncounter.brt",
+		hint: "RandomEncounter.brthint",
+		scope: "world",
+		config: (game.modules.get("better-rolltables")?.active ?? false),
+		default: (game.modules.get("better-rolltables")?.active ?? false),
+		type: Boolean
+	})
 
 	console.debug("random-encounters | checking for old settings")
 	var old_settings = []

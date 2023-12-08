@@ -227,8 +227,13 @@ export default class RandomEncounter {
 				else {
 					table = game.tables.getName(encounters[i].rolltable)
 				}
-				//check if using Better Rolltables
-				if(game.settings.get("random-encounters", "brt")) {
+				//check if using Better Rolltables and check if table is a better rolltable
+				var betterTable = false
+				if (table.flags.hasOwnProperty("better-rolltables") && table.flags["better-rolltables"]["table-type"] != null) {
+					betterTable = true
+				}
+				console.log(table.flags)
+				if(game.settings.get("random-encounters", "brt") && betterTable) {
 					//Using Better Rolltables doesn't let me get roll results if display chat is disabled
 					//it will always create its own chat message which is fine for now
 					//https://github.com/p4535992/foundryvtt-better-rolltables/blob/master/src/scripts/better-tables.js#L85

@@ -10,6 +10,8 @@ Each random encounter can be run on time intervals and dice chance, and will rol
 
 Will not trigger an encounter if players are already in combat.
 
-*NEW FEATURE* You can now roll from Compendiums! See below to configure.
+*NEW FEATURE* You can now roll from [Compendiums](https://github.com/veevelder/random-encounters/wiki/Rolling-from-Compendiums)!
+
+*NEW FEATURE* Now Supports Better [Rolltables](https://github.com/veevelder/random-encounters/wiki/Better-Rolltables)!
 
 How to and settings can be found in the [Wiki](https://github.com/veevelder/random-encounters/wiki)

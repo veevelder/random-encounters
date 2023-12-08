@@ -44,9 +44,6 @@ jobs:
           tag: ${{ github.event.release.tag_name }}
           body: ${{ github.event.release.body }}
 
-  publish:
-    runs-on: ubuntu-latest
-    steps:
       - name: publish module to foundry
         env:
           API_KEY: ${{secrets.FOUNDRY_API_KEY}}

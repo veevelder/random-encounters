@@ -3,44 +3,55 @@
 	"title": "Random Encounters",
 	"description": "Create a random encounter for a scene and trigger them manually or time based",
 	"version": "This is auto replaced",
-	"library": "false",
-	"manifestPlusVersion": "1.2.0",
 	"compatibility": {
 		"minimum": 11,
-		"verified": 11,
-		"maximum": 11
+		"verified": 12,
 	},
 	"authors": [
 		{
 			"name": "lostix",
-			"url": "https://github.com/veevelder/random-encounters"
+			"url": "https://github.com/veevelder/random-encounters",
+			"flags": {},
 		}
 	],
-	"relationships": {
-		"systems": [],
-		"requires": [{
-			"id": "about-time",
-			"type": "module",
-			"manifest": "https://gitlab.com/tposney/about-time/raw/master/package/module.json",
-			"compatibility": {
-				"verified": "1.0.6"
-			}
-		}]
-	},
-	"esmodules": ["scripts/random-encounters.js"],
-	"scripts": [],
-	"styles": ["styles/random-encounters.css"],
+	"esmodules": [
+		"scripts/random-encounters.js"
+	],
+	"styles": [
+		"styles/random-encounters.css"
+	],
 	"languages": [
 		{
 			"lang": "en",
 			"name": "English",
-			"path": "lang/en.json"
+			"path": "lang/en.json",
+			"flags": {}
 		}
 	],
+	"relationships": {
+		"requires": [
+			{
+				"id": "about-time",
+				"type": "module",
+				"manifest": "https://gitlab.com/tposney/about-time/raw/master/package/module.json",
+				"compatibility": {
+					"verified": "11.0.3"
+				}
+			},
+			{
+				"id": "tagger",
+				"type": "module",
+				"manifest": "https://github.com/fantasycalendar/FoundryVTT-Tagger/releases/latest/download/module.json",
+				"compatibility": {
+					"verified": "1.5.1"
+				}
+			}
+		]
+	},
 	"url": "This is auto replaced",
 	"manifest": "This is auto replaced",
 	"download": "This is auto replaced",
 	"license": "LICENSE",
 	"readme": "README.md"
 }
-  
+

@@ -12,6 +12,8 @@ Will not trigger an encounter if players are already in combat.
 
 *NEW FEATURE* You can now roll from [Compendiums](https://github.com/veevelder/random-encounters/wiki/Rolling-from-Compendiums)!
 
-*NEW FEATURE* Now Supports Better [Rolltables](https://github.com/veevelder/random-encounters/wiki/Better-Rolltables)!
+*NEW FEATURE* Now Supports [Better Rolltables](https://github.com/veevelder/random-encounters/wiki/Better-Rolltables)!
+
+*NEW FEATURE* Now works with Tagger to define rooms in a scene see the [wiki](https://github.com/veevelder/random-encounters/wiki/Random-Encounter-for-a-Room-Area-within-a-Scene) for more information
 
 How to and settings can be found in the [Wiki](https://github.com/veevelder/random-encounters/wiki)

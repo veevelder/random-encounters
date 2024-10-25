@@ -12,7 +12,7 @@
 		{
 			"name": "lostix",
 			"url": "https://github.com/veevelder/random-encounters",
-			"flags": {},
+			"flags": {}
 		}
 	],
 	"esmodules": [

@@ -4,9 +4,9 @@
 	"description": "Create a random encounter for a scene and trigger them manually or time based",
 	"version": "This is auto replaced",
 	"compatibility": {
-		"minimum": 11,
-	        "verified": "12",
-	        "maximum": "12"
+		"minimum": "11",
+		"verified": "12",
+		"maximum": "12"
 	},
 	"authors": [
 		{
